@@ -123,8 +123,6 @@ const char *Version = "#RV2r1b";
 #include <SoftwareSerial.h>
 #include <EEPROM.h>
 
-
-
 byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidly switches moves that would
 // cause the robot to try to come up off the ground using fewer than all the legs
 //(and thus over-stressing the servos).
@@ -134,16 +132,19 @@ byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidl
 // "hunting" behavior which can cause the servo to rapidly oscillate around the target position. Adjusting
 // the servo horn screw tightness to be just tight enough to stop any hunting is recommended.
 // This is not needed for analog servos and it is not needed for the Vorpal MG90 branded servos.
-
-//Pixy CmuCam5; // cmu cam 5 support as an SPI device, this is currently experimental
-
-
-
+//
+#define BT_TX A0
+#define BT_RX A1
 #define BeeperPin A2           // digital A2 used for beeper
-#define LED_INDICATOR A3
-#define DIAL_PIN A4
+#define DIAL_PIN A3
+#define LED_INDICATOR A4
+#ifdef __ULTRA_SND__
+#define ULTRAOUTPUTPIN A4     // TRIG
+#define ULTRAINPUTPIN  A5     // ECHO
+#endif
 #define GripElbowCurrentPin A6  // current sensor for grip arm elbow servo, only used if GRIPARM mode
 #define GripClawCurrentPin  A7  // current sensor for grip claw servo, only used if GRIPARM mode
+//
 #define BF_ERROR  100         // deep beep for error situations
 #define BD_MED    50          // medium long beep duration
 
@@ -296,6 +297,7 @@ unsigned long LastValidReceiveTime = 0;  // last time we got a completely valid 
 #define DIALMODE_RC 5
 
 int Dialmode;   // What's the robot potentiometer set to?
+SoftwareSerial BlueTooth(BT_TX, BT_RX);
 
 #define NUM_GRIPSERVOS ((Dialmode == DIALMODE_RC_GRIPARM)?2:0)  // if we're in griparm mode there are 2 griparm servos, else there are none
 
@@ -1504,8 +1506,6 @@ void boogie_woogie(int legs_flat, int submode, int timingfactor) {
   }
 }
 
-SoftwareSerial BlueTooth(A0, A1); // Bluetooth pins: TX=A0=Yellow wire,  RX=A1=Green wire
-
 int ServosDetached = 0;
 
 void attach_all_servos() {
@@ -1543,7 +1543,7 @@ void resetServoDriver() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("");
   Serial.println(Version);
   pinMode(BeeperPin, OUTPUT);
@@ -1567,6 +1567,7 @@ void setup() {
     }
   }
 
+#ifndef __ULTRA_SND__
   // make a characteristic flashing pattern to indicate the robot code is loaded (as opposed to the gamepad)
   // There will be a brief flash after hitting the RESET button, then a long flash followed by a short flash.
   // The gamepaid is brief flash on reset, short flash, long flash.
@@ -1578,7 +1579,8 @@ void setup() {
   digitalWrite(LED_INDICATOR, HIGH);
   delay(150);
   digitalWrite(LED_INDICATOR, LOW);
- 
+#endif
+
   ///////////////////// end of indicator flashing
   delay(300); // give hardware a chance to come up and stabalize
 
@@ -1601,7 +1603,7 @@ void setup() {
   //CmuCam5.init();   // we're still working out some issues with CmuCam5
 
   beep(400); // Signals end of startup sequence
-
+  attach_all_servos();
   yield();
 }
 
@@ -1686,8 +1688,9 @@ void checkForCrashingHips() {
   }
 }
 
-#define ULTRAOUTPUTPIN 7      // TRIG
-#define ULTRAINPUTPIN  8      // ECHO
+#ifdef __ULTRA_SND__
+#define ULTRAOUTPUTPIN A4      // TRIG
+#define ULTRAINPUTPIN  A5     // ECHO
 
 unsigned int readUltrasonic() {  // returns number of centimeters from ultrasonic rangefinder
 
@@ -1708,6 +1711,7 @@ unsigned int readUltrasonic() {  // returns number of centimeters from ultrasoni
   return (duration) / 58;  // this converts microseconds of sound travel time to centimeters. Remember the sound has to go back and forth
   // so it's traveling twice as far as the object's distance
 }
+#endif
 
 // write out a word, high byte first, and return checksum of two individual bytes
 unsigned int
@@ -1722,7 +1726,9 @@ bluewriteword(int w) {
 void
 sendSensorData() {
 
+#ifdef __ULTRA_SND__
   unsigned int ultra = readUltrasonic(); // this delays us 20 milliseconds but we should still be well within timing constraints
+#endif
   //uint16_t blocks = CmuCam5.getBlocks(1); // just return the largest object for now
   int blocks = 0; // comment out cmucam for now
 
@@ -1737,10 +1743,12 @@ sendSensorData() {
   //checksum += bluewriteword(testword);
   //checksum += bluewriteword(testword);
   /////////////////////////////////////////////////////////////////
-  checksum += bluewriteword(analogRead(A3));
+  //checksum += bluewriteword(analogRead(A3));
   checksum += bluewriteword(analogRead(A6));
   checksum += bluewriteword(analogRead(A7));
+#ifdef __ULTRA_SND__
   checksum += bluewriteword(ultra);
+#endif
   if (blocks > 0) {
     //checksum += bluewriteword(CmuCam5.blocks[0].signature);
     //checksum += bluewriteword(CmuCam5.blocks[0].x);
@@ -2456,6 +2464,9 @@ void loop() {
     Dialmode = DIALMODE_RC;
   }
 
+  // for test
+  Dialmode = DIALMODE_DEMO;
+
   if (Dialmode != priorDialMode && priorDialMode != -1) {
     beep(100 + 100 * Dialmode, 60); // audio feedback that a new mode has been entered
     SuppressModesUntil = millis() + 1000;
@@ -2469,8 +2480,9 @@ void loop() {
   //Serial.print("Analog0="); Serial.println(p);
 
   if (Dialmode == DIALMODE_STAND) { // STAND STILL MODE
-
-    digitalWrite(13, LOW);  // turn off LED13 in stand mode
+#ifndef __ULTRA_SND__
+    digitalWrite(LED_INDICATOR, LOW);  // turn off LED in stand mode
+#endif    
     delay(250);
     stand();
     setGrip(90, 90);  // in stand mode set the grip arms to neutral positions
@@ -2478,16 +2490,19 @@ void loop() {
     if (millis() > ReportTime) {
       ReportTime = millis() + 1000;
       Serial.println("Stand Mode, Sensors:");
-      Serial.print(" A3="); Serial.print(analogRead(A3));
+      //Serial.print(" A3="); Serial.print(analogRead(A3));
       Serial.print(" A6="); Serial.print(analogRead(A6));
       Serial.print(" A7="); Serial.print(analogRead(A7));
+#ifdef __ULTRA_SND__
       Serial.print(" Dist="); Serial.print(readUltrasonic());
+#endif
       Serial.println("");
     }
 
   } else if (Dialmode == DIALMODE_ADJUST) {  // Servo adjust mode, put all servos at 90 degrees
-
-    digitalWrite(13, flash(100));  // Flash LED13 rapidly in adjust mode
+#ifndef __ULTRA_SND__
+    digitalWrite(LED_INDICATOR, flash(100));  // Flash LED13 rapidly in adjust mode
+#endif    
     stand_90_degrees();
 
     if (millis() > ReportTime) {
@@ -2496,8 +2511,9 @@ void loop() {
     }
 
   } else if (Dialmode == DIALMODE_TEST) {   // Test each servo one by one
-    pinMode(13, flash(500));      // flash LED13 moderately fast in servo test mode
-
+#ifndef __ULTRA_SND__    
+    pinMode(LED_INDICATOR, flash(500));      // flash LED13 moderately fast in servo test mode
+#endif
     for (int i = 0; i < 2 * NUM_LEGS + NUM_GRIPSERVOS; i++) {
       p = analogRead(A0);
       if (p > 300 || p < 150) {
@@ -2516,8 +2532,9 @@ void loop() {
     }
 
   } else if (Dialmode == DIALMODE_DEMO) {  // demo mode
-
-    digitalWrite(13, flash(2000));  // flash LED13 very slowly in demo mode
+#ifndef __ULTRA_SND__
+    digitalWrite(LED_INDICATOR, flash(2000));  // flash LED very slowly in demo mode
+#endif    
     random_gait(timingfactor);
     if (millis() > ReportTime) {
       ReportTime = millis() + 1000;
@@ -2526,11 +2543,17 @@ void loop() {
     return;
 
   } else { // bluetooth mode (regardless of whether it's with or without the grip arm)
-
-    digitalWrite(13, HIGH);   // LED13 is set to steady on in bluetooth mode
+#ifndef __ULTRA_SND__
+    digitalWrite(LED_INDICATOR, HIGH);   // LED is set to steady on in bluetooth mode
+#endif    
     if (millis() > ReportTime) {
       ReportTime = millis() + 2000;
-      Serial.print("RC Mode:"); Serial.print(ServosDetached); Serial.write(lastCmd); Serial.write(mode); Serial.write(submode); Serial.println("");
+      Serial.print("RC Mode:"); 
+      Serial.print(ServosDetached); 
+      Serial.write(lastCmd); 
+      Serial.write(mode); 
+      Serial.write(submode); 
+      Serial.println("");
     }
     int gotnewdata = receiveDataHandler();  // handle any new incoming data first
     //Serial.print(gotnewdata); Serial.print(" ");
@@ -2813,8 +2836,6 @@ void loop() {
           }
           stand();
         }
-
-
         break;
 
       case 'a': // adjust mode
@@ -2825,10 +2846,5 @@ void loop() {
         Serial.print("BAD CHAR:"); Serial.write(lastCmd); Serial.println("");
         beep(100, 20);
     }  // end of switch
-
-
   }  // end of main if statement
-
-
-
 }
