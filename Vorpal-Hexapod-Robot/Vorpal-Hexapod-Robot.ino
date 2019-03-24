@@ -137,10 +137,11 @@ byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidl
 #define BT_RX A1
 #define BeeperPin A2           // digital A2 used for beeper
 #define DIAL_PIN A3
-#define LED_INDICATOR A4
 #ifdef __ULTRA_SND__
 #define ULTRAOUTPUTPIN A4     // TRIG
 #define ULTRAINPUTPIN  A5     // ECHO
+#else 
+#define LED_INDICATOR A4
 #endif
 #define GripElbowCurrentPin A6  // current sensor for grip arm elbow servo, only used if GRIPARM mode
 #define GripClawCurrentPin  A7  // current sensor for grip claw servo, only used if GRIPARM mode
@@ -1536,7 +1537,7 @@ void detach_all_servos() {
   ServosDetached = 1;
 }
 
-void resetServoDriver() {
+inline void resetServoDriver() {
 
   //servoDriver.begin();
   //servoDriver.setPWMFreq(PWMFREQUENCY);
@@ -1618,7 +1619,7 @@ void setServo(int servonum, int position) {
   }
   ServoPos[servonum] = position;  // keep data on where the servo was last commanded to go
 
-  if (TrimInEffect && servonum < 12) {
+  if (TrimInEffect && servonum < LEG_DOF) {
     //Serial.print("Trim leg "); Serial.print(servonum); Serial.print(" "); Serial.println(ServoTrim[servonum] - TRIM_ZERO);
     int p = map(position, 0, 180, SERVOMIN, SERVOMAX);
     p += ServoTrim[servonum] - TRIM_ZERO; // adjust microseconds by trim value which is renormalized to the range -127 to 128
@@ -2071,7 +2072,7 @@ void processPacketData() {
             ServoPos[servo] = pos;
           }
           checkForCrashingHips();  // make sure the user didn't do something silly
-          for (int servo = 0; servo < 12; servo++) {
+          for (int servo = 0; servo < LEG_DOF; servo++) {
             setServo(servo, ServoPos[servo]);
           }
           i += 18; // length of raw servo move is 18 bytes
@@ -2252,7 +2253,7 @@ void processPacketData() {
           attach_all_servos();
         }
         if (i <= packetLengthReceived - 13) {
-          for (int servo = 0; servo < 12; servo++) {
+          for (int servo = 0; servo < LEG_DOF; servo++) {
             unsigned int position = packetData[i + 1 + servo];
             if (position < 0) {
               position = 0;
@@ -2272,7 +2273,7 @@ void processPacketData() {
             }
           }
           checkForCrashingHips();
-          for (int servo = 0; servo < 12; servo++) {
+          for (int servo = 0; servo < LEG_DOF; servo++) {
             setServo(servo, ServoPos[servo]);
           }
 
@@ -2337,7 +2338,7 @@ int flash(unsigned long t) {
 unsigned long freqWatchDog = 0;
 unsigned long SuppressScamperUntil = 0;  // if we had to wake up the servos, suppress the power hunger scamper mode for a while
 
-void checkForServoSleep() {
+inline void checkForServoSleep() {
   /*
     if (millis() > freqWatchDog) {
 
@@ -2482,7 +2483,7 @@ void loop() {
   if (Dialmode == DIALMODE_STAND) { // STAND STILL MODE
 #ifndef __ULTRA_SND__
     digitalWrite(LED_INDICATOR, LOW);  // turn off LED in stand mode
-#endif    
+#endif
     delay(250);
     stand();
     setGrip(90, 90);  // in stand mode set the grip arms to neutral positions
@@ -2502,7 +2503,7 @@ void loop() {
   } else if (Dialmode == DIALMODE_ADJUST) {  // Servo adjust mode, put all servos at 90 degrees
 #ifndef __ULTRA_SND__
     digitalWrite(LED_INDICATOR, flash(100));  // Flash LED13 rapidly in adjust mode
-#endif    
+#endif
     stand_90_degrees();
 
     if (millis() > ReportTime) {
@@ -2511,11 +2512,11 @@ void loop() {
     }
 
   } else if (Dialmode == DIALMODE_TEST) {   // Test each servo one by one
-#ifndef __ULTRA_SND__    
-    pinMode(LED_INDICATOR, flash(500));      // flash LED13 moderately fast in servo test mode
+#ifndef __ULTRA_SND__
+    pinMode(LED_INDICATOR, flash(500));      // flash LED moderately fast in servo test mode
 #endif
     for (int i = 0; i < 2 * NUM_LEGS + NUM_GRIPSERVOS; i++) {
-      p = analogRead(A0);
+      p = analogRead(DIAL_PIN);
       if (p > 300 || p < 150) {
         break;
       }
@@ -2534,7 +2535,7 @@ void loop() {
   } else if (Dialmode == DIALMODE_DEMO) {  // demo mode
 #ifndef __ULTRA_SND__
     digitalWrite(LED_INDICATOR, flash(2000));  // flash LED very slowly in demo mode
-#endif    
+#endif
     random_gait(timingfactor);
     if (millis() > ReportTime) {
       ReportTime = millis() + 1000;
@@ -2545,14 +2546,14 @@ void loop() {
   } else { // bluetooth mode (regardless of whether it's with or without the grip arm)
 #ifndef __ULTRA_SND__
     digitalWrite(LED_INDICATOR, HIGH);   // LED is set to steady on in bluetooth mode
-#endif    
+#endif
     if (millis() > ReportTime) {
       ReportTime = millis() + 2000;
-      Serial.print("RC Mode:"); 
-      Serial.print(ServosDetached); 
-      Serial.write(lastCmd); 
-      Serial.write(mode); 
-      Serial.write(submode); 
+      Serial.print("RC Mode:");
+      Serial.print(ServosDetached);
+      Serial.write(lastCmd);
+      Serial.write(mode);
+      Serial.write(submode);
       Serial.println("");
     }
     int gotnewdata = receiveDataHandler();  // handle any new incoming data first
