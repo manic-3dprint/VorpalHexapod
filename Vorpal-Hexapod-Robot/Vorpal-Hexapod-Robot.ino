@@ -140,7 +140,7 @@ byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidl
 #ifdef __ULTRA_SND__
 #define ULTRAOUTPUTPIN A4     // TRIG
 #define ULTRAINPUTPIN  A5     // ECHO
-#else 
+#else
 #define LED_INDICATOR A4
 #endif
 #define GripElbowCurrentPin A6  // current sensor for grip arm elbow servo, only used if GRIPARM mode
@@ -310,9 +310,18 @@ Servo *servos[LEG_DOF] = {
 };
 
 byte pins[LEG_DOF] = {
-  2, 3, 4, 5,
-  6, 7, 8, 9,
-  10, 11, 12, 13,
+  10,
+  7,
+  13,
+  3,
+  6,
+  9,
+  11,
+  5,
+  12,
+  2,
+  4,
+  8,
 };
 
 void beep(int f, int t) {
@@ -1627,7 +1636,7 @@ void setServo(int servonum, int position) {
   }
   if (!deferServoSet && servos[servonum]->attached()) {
     //servoDriver.setPWM(servonum, 0, p);
-    servos[servonum]->write(position);
+    servos[servonum]->write(180 - position);
   }
   // DEBUG: Uncomment the next line to debug setservo problems. It causes some lagginess due to all the printing
   //Serial.print("SS:");Serial.print(servonum);Serial.print(":");Serial.println(position);
@@ -2466,7 +2475,7 @@ void loop() {
   }
 
   // for test
-  Dialmode = DIALMODE_DEMO;
+  Dialmode = DIALMODE_TEST;
 
   if (Dialmode != priorDialMode && priorDialMode != -1) {
     beep(100 + 100 * Dialmode, 60); // audio feedback that a new mode has been entered
