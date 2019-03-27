@@ -1635,8 +1635,28 @@ void setServo(int servonum, int position) {
     position = map(p, SERVOMIN, SERVOMAX, 0, 180);
   }
   if (!deferServoSet && servos[servonum]->attached()) {
-    //servoDriver.setPWM(servonum, 0, p);
-    servos[servonum]->write(180 - position);
+   
+//#define __VORPAL_FRAME__   
+#ifdef __VORPAL_FRAME__       
+    servos[servonum]->write(position);
+#else     
+    switch (servonum) {
+      case 2:
+      case 3:
+      case 5:
+      case 6:
+      case 7:
+      case 9: servos[servonum]->write(position);
+        break;
+      case 0:
+      case 1:
+      case 4:
+      case 8:
+      case 10:
+      case 11: servos[servonum]->write(180 - position);
+        break;
+    }
+#endif
   }
   // DEBUG: Uncomment the next line to debug setservo problems. It causes some lagginess due to all the printing
   //Serial.print("SS:");Serial.print(servonum);Serial.print(":");Serial.println(position);
@@ -2475,7 +2495,7 @@ void loop() {
   }
 
   // for test
-  Dialmode = DIALMODE_TEST;
+  //Dialmode = DIALMODE_TEST;
 
   if (Dialmode != priorDialMode && priorDialMode != -1) {
     beep(100 + 100 * Dialmode, 60); // audio feedback that a new mode has been entered
