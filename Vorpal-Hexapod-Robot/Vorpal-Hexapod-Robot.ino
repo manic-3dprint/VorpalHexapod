@@ -1635,22 +1635,22 @@ void setServo(int servonum, int position) {
     position = map(p, SERVOMIN, SERVOMAX, 0, 180);
   }
   if (!deferServoSet && servos[servonum]->attached()) {
-   
-//#define __VORPAL_FRAME__   
-#ifdef __VORPAL_FRAME__       
+
+//#define __VORPAL_FRAME__
+#ifdef __VORPAL_FRAME__
     servos[servonum]->write(position);
-#else     
+#else
     switch (servonum) {
-      case 2:
-      case 3:
-      case 5:
       case 6:
       case 7:
       case 9: servos[servonum]->write(position);
         break;
       case 0:
       case 1:
+      case 2:
+      case 3:
       case 4:
+      case 5:
       case 8:
       case 10:
       case 11: servos[servonum]->write(180 - position);
