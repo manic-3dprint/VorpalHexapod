@@ -6,7 +6,7 @@
 //
 // See below all the license comments for new features in this version. (Search for NEW FEATURES)
 
-const char *Version = "#RV2r1b";
+const char *Version = "#RV2r1a";
 
 //////////// FOR MORE INFORMATION ///////////////////////////////////
 // Main website:                  http://www.vorpalrobotics.com
@@ -120,7 +120,6 @@ const char *Version = "#RV2r1b";
 //    will not be able to correct for an errant scratch program that triggers this situation.
 
 #include <Servo.h>
-#include <SoftwareSerial.h>
 #include <EEPROM.h>
 
 byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidly switches moves that would
@@ -133,21 +132,29 @@ byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidl
 // the servo horn screw tightness to be just tight enough to stop any hunting is recommended.
 // This is not needed for analog servos and it is not needed for the Vorpal MG90 branded servos.
 //
+#define __DEBUG__
+//#define __ULTRA_SND__
+
+#ifdef __DEBUG__
+#include <SoftwareSerial.h>
 #define BT_TX A0
 #define BT_RX A1
+#else
+#define LED_INDICATOR A1
+#endif
+//
 #define BeeperPin A2           // digital A2 used for beeper
 #define DIAL_PIN A3
 #ifdef __ULTRA_SND__
 #define ULTRAOUTPUTPIN A4     // TRIG
 #define ULTRAINPUTPIN  A5     // ECHO
-#else
-#define LED_INDICATOR A4
 #endif
 #define GripElbowCurrentPin A6  // current sensor for grip arm elbow servo, only used if GRIPARM mode
 #define GripClawCurrentPin  A7  // current sensor for grip claw servo, only used if GRIPARM mode
 //
 #define BF_ERROR  100         // deep beep for error situations
 #define BD_MED    50          // medium long beep duration
+
 
 // Depending on your servo make, the pulse width min and max may vary, you
 // want these to be as small/large as possible without hitting the hard stop
@@ -282,6 +289,8 @@ int GripArmElbowTarget = 90, GripArmClawTarget = 90;
 // Definitions for the servos
 
 #define MAX_GRIPSERVOS 2
+//#define NUM_GRIPSERVOS ((Dialmode == DIALMODE_RC_GRIPARM)?2:0)  // if we're in griparm mode there are 2 griparm servos, else there are none
+#define NUM_GRIPSERVOS 0  // this version does not have GRIP servos
 
 short ServoPos[2 * NUM_LEGS + MAX_GRIPSERVOS]; // the last commanded position of each servo
 long ServoTime[2 * NUM_LEGS + MAX_GRIPSERVOS]; // the time that each servo was last commanded to a new position
@@ -298,9 +307,20 @@ unsigned long LastValidReceiveTime = 0;  // last time we got a completely valid 
 #define DIALMODE_RC 5
 
 int Dialmode;   // What's the robot potentiometer set to?
-SoftwareSerial BlueTooth(BT_TX, BT_RX);
+//
 
-#define NUM_GRIPSERVOS ((Dialmode == DIALMODE_RC_GRIPARM)?2:0)  // if we're in griparm mode there are 2 griparm servos, else there are none
+#define Console Serial
+#define CONSOLE_BAUD 38400
+#define BLUETOOTH_BAUD 38400
+/*
+  #define BlueTooth Serial
+  #define BLUETOOTH_BAUD CONSOLE_BAUD
+*/
+#ifdef __DEBUG__
+SoftwareSerial BlueTooth(A0, A1);
+#else
+#define BlueTooth Serial
+#endif
 
 #define LEG_DOF (2 * NUM_LEGS)
 Servo *servos[LEG_DOF] = {
@@ -345,17 +365,25 @@ byte TrimPose = 0;
 #define TRIM_ZERO 127   // this value is the midpoint of the trim range (a byte)
 
 void save_trims() {
-  Serial.print("SAVE TRIMS:");
+#ifdef __DEBUG__
+  Console.print("SAVE TRIMS:");
+#endif
   for (int i = 0; i < NUM_LEGS * 2; i++) {
     EEPROM.update(i + 1, ServoTrim[i]);
-    Serial.print(ServoTrim[i]); Serial.print(" ");
+#ifdef __DEBUG__
+    Console.print(ServoTrim[i]); Console.print(" ");
+#endif
   }
-  Serial.println("");
+#ifdef __DEBUG__
+  Console.println("");
+#endif
   EEPROM.update(0, 'V');
 
 }
 void erase_trims() {
-  Serial.println("ERASE TRIMS");
+#ifdef __DEBUG__
+  Console.println("ERASE TRIMS");
+#endif
   for (int i = 0; i < NUM_LEGS * 2; i++) {
     ServoTrim[i] = TRIM_ZERO;
   }
@@ -403,7 +431,7 @@ void setLeg(int legmask, int hip_pos, int knee_pos, int adj, int raw, int leanan
               if (leanangle > 0) pos += leanangle;
               break;
           }
-          //Serial.print("Lean:"); Serial.print(leanangle); Serial.print("pos="); Serial.println(pos);
+          //Console.print("Lean:"); Console.print(leanangle); Console.print("pos="); Console.println(pos);
         }
 
         setKnee(i, pos);
@@ -480,8 +508,8 @@ void turn(int ccw, int hipforward, int hipbackward, int kneeup, int kneedown, lo
   long t = millis() % timeperiod;
   long phase = (NUM_TURN_PHASES * t) / timeperiod;
 
-  //Serial.print("PHASE: ");
-  //Serial.println(phase);
+  //Console.print("PHASE: ");
+  //Console.println(phase);
 
   switch (phase) {
     case 0:
@@ -646,8 +674,8 @@ void gait_sidestep(int left, long timeperiod) {
     side2 = LEFT_LEGS;
   }
 
-  //Serial.print("PHASE: ");
-  //Serial.println(phase);
+  //Console.print("PHASE: ");
+  //Console.println(phase);
 
   transactServos();
 
@@ -698,9 +726,10 @@ short GripArmElbowIncrement = 0;
 void griparm_mode(char dpad) {
   // this mode retains state and moves slowly
 
-  //Serial.print("Grip:"); Serial.print(dpad);
-
-  Serial.println();
+  //Console.print("Grip:"); Console.print(dpad);
+#ifdef __DEBUG__
+  Console.println();
+#endif
   switch (dpad) {
     case 's':
       // do nothing in stop mode, just hold current position
@@ -762,7 +791,7 @@ void griparm_mode(char dpad) {
   }
   GripArmElbowDestination = h;
   GripArmElbowIncrement = (h < ServoPos[GRIPARM_ELBOW_SERVO]) ? -2 : 2;
-  //Serial.print("GADest="); Serial.print(h); Serial.print(" GAinc="); Serial.println(GripArmElbowIncrement);
+  //Console.print("GADest="); Console.print(h); Console.print(" GAinc="); Console.println(GripArmElbowIncrement);
 
 }
 
@@ -930,7 +959,7 @@ void fight_mode(char dpad, int mode, long timeperiod) {
       }
 
       setHipRaw(i, h);
-      //Serial.print("RAW "); Serial.print(i); Serial.print(" "); Serial.println(h);
+      //Console.print("RAW "); Console.print(i); Console.print(" "); Console.println(h);
 
     }
     return;  // /this mode does not execute the rest of the actions
@@ -987,8 +1016,8 @@ void fight_mode(char dpad, int mode, long timeperiod) {
         long t = millis() % timeperiod;
         long phase = (NUM_PUGIL_PHASES * t) / timeperiod;
 
-        //Serial.print("PHASE: ");
-        //Serial.println(phase);
+        //Console.print("PHASE: ");
+        //Console.println(phase);
 
         switch (phase) {
           case 0:
@@ -1070,8 +1099,8 @@ void gait_tripod(int reverse, int hipforward, int hipbackward,
   long t = millis() % timeperiod;
   long phase = (NUM_TRIPOD_PHASES * t) / timeperiod;
 
-  //Serial.print("PHASE: ");
-  //Serial.println(phase);
+  //Console.print("PHASE: ");
+  //Console.println(phase);
 
   transactServos(); // defer leg motions until after checking for crashes
   switch (phase) {
@@ -1162,7 +1191,7 @@ void gait_tripod_scamper(int reverse, int turn) {
 
   }
 
-  //Serial.print("ScamperPhase: "); Serial.println(ScamperPhase);
+  //Console.print("ScamperPhase: "); Console.println(ScamperPhase);
 
   transactServos();
   switch (ScamperPhase) {
@@ -1229,8 +1258,8 @@ void gait_ripple(int reverse, int hipforward, int hipbackward, int kneeup, int k
   long t = millis() % timeperiod;
   long phase = (NUM_RIPPLE_PHASES * t) / timeperiod;
 
-  //Serial.print("PHASE: ");
-  //Serial.println(phase);
+  //Console.print("PHASE: ");
+  //Console.println(phase);
 
   transactServos();
 
@@ -1519,7 +1548,9 @@ void boogie_woogie(int legs_flat, int submode, int timingfactor) {
 int ServosDetached = 0;
 
 void attach_all_servos() {
-  Serial.print("ATTACH");
+#ifdef __DEBUG__
+  Console.print("ATTACH");
+#endif
   for (int i = 0; i < 2 * NUM_LEGS; i++) {
     if (servos[i] == nullptr) {
       servos[i] = new Servo();
@@ -1528,15 +1559,19 @@ void attach_all_servos() {
       servos[i]->attach(pins[i], SERVOMIN, SERVOMAX);
     }
     setServo(i, ServoPos[i]);
-    Serial.print(ServoPos[i]); Serial.print(":");
+#ifdef __DEBUG__
+    Console.print(ServoPos[i]); Console.print(":");
+#endif
   }
-  Serial.println("");
+#ifdef __DEBUG__
+  Console.println("");
+#endif
   ServosDetached = 0;
   return;
 }
 
 void detach_all_servos() {
-  //Serial.println("DETACH");
+  //Console.println("DETACH");
   for (int i = 0; i < 2 * NUM_LEGS; i++) {
     //servoDriver.setPin(i, 0, false); // stop pulses which will quickly detach the servo
     if (servos[i] != nullptr) {
@@ -1546,16 +1581,11 @@ void detach_all_servos() {
   ServosDetached = 1;
 }
 
-inline void resetServoDriver() {
-
-  //servoDriver.begin();
-  //servoDriver.setPWMFreq(PWMFREQUENCY);
-}
-
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(CONSOLE_BAUD);
   Serial.println("");
   Serial.println(Version);
+
   pinMode(BeeperPin, OUTPUT);
   beep(200);
 
@@ -1563,24 +1593,33 @@ void setup() {
   if (EEPROM.read(0) == 'V') {
     // if the first byte in the eeprom is a capital letter V that means there are trim values
     // available. Note that eeprom from the factory is set to all 255 values.
-    Serial.print("TRIMS: ");
+#ifdef __DEBUG__
+    Console.print("TRIMS: ");
+#endif
     for (int i = 0; i < NUM_LEGS * 2; i++) {
       ServoTrim[i] = EEPROM.read(i + 1);
-      Serial.print(ServoTrim[i] - TRIM_ZERO); Serial.print(" ");
+#ifdef __DEBUG__
+      Console.print(ServoTrim[i] - TRIM_ZERO); Console.print(" ");
+#endif
     }
-    Serial.println("");
+#ifdef __DEBUG__
+    Console.println("");
+#endif
   } else {
-    Serial.println("TRIMS:unset");
+#ifdef __DEBUG__
+    Console.println("TRIMS:unset");
+#endif
     // init trim values to zero, no trim
     for (int i = 0; i < NUM_LEGS * 2; i++) {
       ServoTrim[i] = TRIM_ZERO;   // this is the middle of the trim range and will result in no trim
     }
   }
 
-#ifndef __ULTRA_SND__
+
   // make a characteristic flashing pattern to indicate the robot code is loaded (as opposed to the gamepad)
   // There will be a brief flash after hitting the RESET button, then a long flash followed by a short flash.
   // The gamepaid is brief flash on reset, short flash, long flash.
+#ifndef __DEBUG__
   pinMode(LED_INDICATOR, OUTPUT);
   digitalWrite(LED_INDICATOR, HIGH);
   delay(300);
@@ -1590,21 +1629,17 @@ void setup() {
   delay(150);
   digitalWrite(LED_INDICATOR, LOW);
 #endif
-
   ///////////////////// end of indicator flashing
   delay(300); // give hardware a chance to come up and stabalize
-
-  BlueTooth.begin(38400);
-
-  BlueTooth.println("");
+#ifdef __DEBUG__
+  // in debug mode uses SoftwareSerial for RC control, in normal run uses Serial.
+  Console.println("SoftwareSerial setup for bluetooth.");
+  BlueTooth.begin(BLUETOOTH_BAUD);
   delay(250);
+#endif
   BlueTooth.println(Version);
 
   delay(250);
-
-  //resetServoDriver();
-  //delay(250);
-
   stand();
   setGrip(90, 90);  // neutral grip arm (if installed)
 
@@ -1629,14 +1664,14 @@ void setServo(int servonum, int position) {
   ServoPos[servonum] = position;  // keep data on where the servo was last commanded to go
 
   if (TrimInEffect && servonum < LEG_DOF) {
-    //Serial.print("Trim leg "); Serial.print(servonum); Serial.print(" "); Serial.println(ServoTrim[servonum] - TRIM_ZERO);
+    //Console.print("Trim leg "); Console.print(servonum); Console.print(" "); Console.println(ServoTrim[servonum] - TRIM_ZERO);
     int p = map(position, 0, 180, SERVOMIN, SERVOMAX);
     p += ServoTrim[servonum] - TRIM_ZERO; // adjust microseconds by trim value which is renormalized to the range -127 to 128
     position = map(p, SERVOMIN, SERVOMAX, 0, 180);
   }
   if (!deferServoSet && servos[servonum]->attached()) {
 
-//#define __VORPAL_FRAME__
+    //#define __VORPAL_FRAME__
 #ifdef __VORPAL_FRAME__
     servos[servonum]->write(position);
 #else
@@ -1659,7 +1694,7 @@ void setServo(int servonum, int position) {
 #endif
   }
   // DEBUG: Uncomment the next line to debug setservo problems. It causes some lagginess due to all the printing
-  //Serial.print("SS:");Serial.print(servonum);Serial.print(":");Serial.println(position);
+  //Console.print("SS:");Console.print(servonum);Console.print(":");Console.println(position);
 }
 
 void transactServos() {
@@ -1705,11 +1740,11 @@ void checkForCrashingHips() {
     int adjust = (diff - 85) / 2 + 1; // each leg will get adjusted half the amount needed to avoid the crash
 
     // to debug crash detection, make the following line #if 1, else make it #if 0
-#if 1
-    Serial.print("#CRASH:");
-    Serial.print(leg); Serial.print("="); Serial.print(ServoPos[leg]);
-    Serial.print("/"); Serial.print(nextleg); Serial.print("="); Serial.print(ServoPos[nextleg]);
-    Serial.print(" Diff="); Serial.print(diff); Serial.print(" ADJ="); Serial.println(adjust);
+#ifdef __DEBUG__
+    Console.print("#CRASH:");
+    Console.print(leg); Console.print("="); Console.print(ServoPos[leg]);
+    Console.print("/"); Console.print(nextleg); Console.print("="); Console.print(ServoPos[nextleg]);
+    Console.print(" Diff="); Console.print(diff); Console.print(" ADJ="); Console.println(adjust);
 #endif
 
     setServo(leg, ServoPos[leg] + adjust);
@@ -1733,7 +1768,7 @@ unsigned int readUltrasonic() {  // returns number of centimeters from ultrasoni
 
   unsigned int duration = pulseIn(ULTRAINPUTPIN, HIGH, 18000);  // maximum 18 milliseconds which would be about 10 feet distance from object
 
-  //Serial.print("ultra cm:"); Serial.println(duration/58);
+  //Console.print("ultra cm:"); Console.println(duration/58);
 
   if (duration < 100) { // Either 0 means timed out, or less than 2cm is out of range as well
     return 1000;   // we will use this large value to mean out of range, since 400 cm is the manufacturer's max range published
@@ -1789,7 +1824,7 @@ sendSensorData() {
 
   checksum = (checksum % 256);
   BlueTooth.write(checksum); // end with checksum of data and length
-  //Serial.println("Sens");
+  //Console.println("Sens");
 
   startedStanding = millis(); // sensor commands are coming from scratch so suppress sleep mode if this comes in
 
@@ -1814,9 +1849,11 @@ int packetState = P_WAITING_FOR_HEADER;
 
 void packetErrorChirp(char c) {
   beep(70, 8);
-  Serial.print(" BTER:"); Serial.print(packetState); Serial.print(c);
-  //Serial.print("("); Serial.print(c,DEC); Serial.print(")");
-  Serial.print("A"); Serial.println(BlueTooth.available());
+#ifdef __DEBUG__
+  Console.print(" BTER:"); Console.print(packetState); Console.print(c);
+  //Console.print("("); Console.print(c,DEC); Console.print(")");
+  Console.print("A"); Console.println(BlueTooth.available());
+#endif
   packetState = P_WAITING_FOR_HEADER; // reset to initial state if any error occurs
 }
 
@@ -1837,22 +1874,22 @@ int receiveDataHandler() {
     // second or slower if you want to use this.
 #if 0
     unsigned long m = millis();
-    //Serial.print(m);
-    Serial.print("'"); Serial.write(c); Serial.print("' ("); Serial.print((int)c);
-    //Serial.print(")S="); Serial.print(packetState); Serial.print(" a="); Serial.print(BlueTooth.available()); Serial.println("");
-    //Serial.print(m);
-    Serial.println("");
+    //Console.print(m);
+    Console.print("'"); Console.write(c); Console.print("' ("); Console.print((int)c);
+    //Console.print(")S="); Console.print(packetState); Console.print(" a="); Console.print(BlueTooth.available()); Console.println("");
+    //Console.print(m);
+    Console.println("");
 #endif
 
     switch (packetState) {
       case P_WAITING_FOR_HEADER:
         if (c == 'V') {
           packetState = P_WAITING_FOR_VERSION;
-          //Serial.print("GOT V ");
+          //Console.print("GOT V ");
         } else if (c == '@') {  // simplified mode, makes it easier for people to write simple apps to control the robot
           packetState = P_SIMPLE_WAITING_FOR_DATA;
           packetLengthReceived = 0; // we'll be waiting for exactly 3 bytes like 'D1b' or 'F3s'
-          //Serial.print("GOT @");
+          //Console.print("GOT @");
         } else {
           // may as well flush up to the next header
           int flushcount = 0;
@@ -1860,14 +1897,16 @@ int receiveDataHandler() {
             BlueTooth.read(); // toss up to next possible header start
             flushcount++;
           }
-          Serial.print("F:"); Serial.print(flushcount);
+#ifdef __DEBUG__
+          Console.print("F:"); Console.print(flushcount);
+#endif
           packetErrorChirp(c);
         }
         break;
       case P_WAITING_FOR_VERSION:
         if (c == '1') {
           packetState = P_WAITING_FOR_LENGTH;
-          //Serial.print("GOT 1 ");
+          //Console.print("GOT 1 ");
         } else if (c == 'V') {
           // this can actually happen if the checksum was a 'V' and some noise caused a
           // flush up to the checksum's V, that V would be consumed by state WAITING FOR HEADER
@@ -1888,20 +1927,24 @@ int receiveDataHandler() {
             // static happened to hit right when the length was being transmitted. In either case, this
             // packet is toast so abandon it.
             packetErrorChirp(c);
-            Serial.print("Bad Length="); Serial.println(c);
+#ifdef __DEBUG__
+            Console.print("Bad Length="); Console.println(c);
+#endif
             packetState = P_WAITING_FOR_HEADER;
             return 0;
           }
           packetLengthReceived = 0;
           packetState = P_READING_DATA;
 
-          //Serial.print("L="); Serial.println(packetLength);
+          //Console.print("L="); Console.println(packetLength);
         }
         break;
       case P_READING_DATA:
         if (packetLengthReceived >= MAXPACKETDATA) {
           // well this should never, ever happen but I'm being paranoid here.
-          Serial.println("ERROR: PacketDataLen out of bounds!");
+#ifdef __DEBUG__
+          Console.println("ERROR: PacketDataLen out of bounds!");
+#endif
           packetState = P_WAITING_FOR_HEADER;  // abandon this packet
           packetLengthReceived = 0;
           return 0;
@@ -1910,7 +1953,7 @@ int receiveDataHandler() {
         if (packetLengthReceived == packetLength) {
           packetState = P_WAITING_FOR_CHECKSUM;
         }
-        //Serial.print("CHAR("); Serial.print(c); Serial.print("/"); Serial.write(c); Serial.println(")");
+        //Console.print("CHAR("); Console.print(c); Console.print("/"); Console.write(c); Console.println(")");
         break;
 
       case P_WAITING_FOR_CHECKSUM:
@@ -1919,15 +1962,17 @@ int receiveDataHandler() {
           unsigned int sum = packetLength;  // the length byte is part of the checksum
           for (unsigned int i = 0; i < packetLength; i++) {
             // uncomment the next line if you need to see the packet bytes
-            //Serial.print(packetData[i]);Serial.print("-");
+            //Console.print(packetData[i]);Console.print("-");
             sum += packetData[i];
           }
           sum = (sum % 256);
 
           if (sum != c) {
             packetErrorChirp(c);
-            Serial.print("CHECKSUM FAIL "); Serial.print(sum); Serial.print("!="); Serial.print((int)c);
-            Serial.print(" len="); Serial.println(packetLength);
+#ifdef __DEBUG__
+            Console.print("CHECKSUM FAIL "); Console.print(sum); Console.print("!="); Console.print((int)c);
+            Console.print(" len="); Console.println(packetLength);
+#endif
             packetState = P_WAITING_FOR_HEADER;  // giving up on this packet, let's wait for another
           } else {
             LastValidReceiveTime = millis();  // set the time we received a valid packet
@@ -1963,7 +2008,7 @@ int receiveDataHandler() {
             return 1;
           }
         }
-        //Serial.print("CHAR("); Serial.print(c); Serial.print("/"); Serial.write(c); Serial.println(")");
+        //Console.print("CHAR("); Console.print(c); Console.print("/"); Console.write(c); Console.println(")");
         break;
     }
   }
@@ -2003,20 +2048,22 @@ void gait_command(int gaittype, int reverse, int hipforward, int hipbackward, in
   }
 
 #if 0
-  Serial.print("GAIT: style="); Serial.print(gaittype); Serial.print(" dir="); Serial.print(reverse, DEC); Serial.print(" angles="); Serial.print(hipforward);
-  Serial.print("/"); Serial.print(hipbackward); Serial.print("/"); Serial.print(kneeup, DEC); Serial.print("/"); Serial.print(kneedown);
-  Serial.print("/"); Serial.println(leanangle);
+  Console.print("GAIT: style="); Console.print(gaittype); Console.print(" dir="); Console.print(reverse, DEC); Console.print(" angles="); Console.print(hipforward);
+  Console.print("/"); Console.print(hipbackward); Console.print("/"); Console.print(kneeup, DEC); Console.print("/"); Console.print(kneedown);
+  Console.print("/"); Console.println(leanangle);
 #endif
 
   mode = MODE_GAIT;   // this stops auto-repeat of gamepad mode commands
 }
 
-void dumpPacket() { // this is purely for debugging, it can cause timing problems so only use it for debugging
-  Serial.print("DMP:");
+inline void dumpPacket() { // this is purely for debugging, it can cause timing problems so only use it for debugging
+#ifdef __DEBUG__
+  Console.print("DMP:");
   for (unsigned int i = 0; i < packetLengthReceived; i++) {
-    Serial.write(packetData[i]); Serial.print("("); Serial.print(packetData[i]); Serial.print(")");
+    Console.write(packetData[i]); Console.print("("); Console.print(packetData[i]); Console.print(")");
   }
-  Serial.println("");
+  Console.println("");
+#endif
 }
 
 void processPacketData() {
@@ -2032,7 +2079,7 @@ void processPacketData() {
           mode = packetData[i];
           submode = packetData[i + 1];
           lastCmd = packetData[i + 2];
-          //Serial.print("GP="); Serial.write(mode);Serial.write(submode);Serial.write(lastCmd);Serial.println("");
+          //Console.print("GP="); Console.write(mode);Console.write(submode);Console.write(lastCmd);Console.println("");
           i += 3; // length of mode command is 3 bytes
           continue;
         } else {
@@ -2040,7 +2087,9 @@ void processPacketData() {
           // so the safest thing to do is toss the entire packet and give an error
           // beep
           beep(BF_ERROR, BD_MED);
-          Serial.println("PKERR:M:Short");
+#ifdef __DEBUG__
+          Console.println("PKERR:M:Short");
+#endif
           return;  // stop processing because we can't trust this packet anymore
         }
         break;
@@ -2051,14 +2100,18 @@ void processPacketData() {
           // eventually we should queue beeps so scratch can issue multiple tones
           // to be played over time.
           if (honkfreq > 0 && honkdur > 0) {
-            Serial.println("Beep Command");
+#ifdef __DEBUG__
+            Console.println("Beep Command");
+#endif
             beep(honkfreq, honkdur);
           }
           i += 5; // length of beep command is 5 bytes
         } else {
           // again, we're short on bytes for this command so something is amiss
           beep(BF_ERROR, BD_MED);
-          Serial.print("PKERR:B:Short:"); Serial.print(i); Serial.print(":"); Serial.println(packetLengthReceived);
+#ifdef __DEBUG__
+          Console.print("PKERR:B:Short:"); Console.print(i); Console.print(":"); Console.println(packetLengthReceived);
+#endif
           return;  // toss the rest of the packet
         }
         break;
@@ -2077,18 +2130,18 @@ void processPacketData() {
         // the 16 bytes of movement data is either a number from 1 to 180 meaning a position, or the
         // number 255 meaning "no move, stay at prior value", or 254 meaning "cut power to servo"
         if (i <= packetLengthReceived - 18) {
-          //Serial.println("Got Raw Servo with enough bytes left");
+          //Console.println("Got Raw Servo with enough bytes left");
           int movetype = packetData[i + 1];
-          //Serial.print(" Movetype="); Serial.println(movetype);
+          //Console.print(" Movetype="); Console.println(movetype);
           for (int servo = 0; servo < 16; servo++) {
             int pos = packetData[i + 2 + servo];
             if (pos == RAWSERVONOMOVE) {
-              //Serial.print("Port "); Serial.print(servo); Serial.println(" NOMOVE");
+              //Console.print("Port "); Console.print(servo); Console.println(" NOMOVE");
               continue;
             }
             if (pos == RAWSERVODETACH) {
               servos[servo]->detach(); //servoDriver.setPin(servo, 0, false); // stop pulses which will quickly detach the servo
-              //Serial.print("Port "); Serial.print(servo); Serial.println(" detached");
+              //Console.print("Port "); Console.print(servo); Console.println(" detached");
               continue;
             }
             if (movetype == RAWSERVOADD) {
@@ -2097,7 +2150,7 @@ void processPacketData() {
               pos = ServoPos[servo] - pos;
             }
             pos = constrain(pos, 0, 180);
-            //Serial.print("Servo "); Serial.print(servo); Serial.print(" pos "); Serial.println(pos);
+            //Console.print("Servo "); Console.print(servo); Console.print(" pos "); Console.println(pos);
             ServoPos[servo] = pos;
           }
           checkForCrashingHips();  // make sure the user didn't do something silly
@@ -2110,7 +2163,9 @@ void processPacketData() {
         } else {
           // again, we're short on bytes for this command so something is amiss
           beep(BF_ERROR, BD_MED);
-          Serial.print("PKERR:R:Short:"); Serial.print(i); Serial.print(":"); Serial.println(packetLengthReceived);
+#ifdef __DEBUG__
+          Console.print("PKERR:R:Short:"); Console.print(i); Console.print(":"); Console.println(packetLengthReceived);
+#endif
           return;  // toss the rest of the packet
         }
         break;
@@ -2144,7 +2199,9 @@ void processPacketData() {
         } else {
           // again, we're short on bytes for this command so something is amiss
           beep(BF_ERROR, BD_MED);
-          Serial.println("PKERR:G:Short");
+#ifdef __DEBUG__
+          Console.println("PKERR:G:Short");
+#endif
           return;  // toss the rest of the packet
         }
         break;
@@ -2155,16 +2212,22 @@ void processPacketData() {
           unsigned int hip = packetData[i + 3];
           if (knee == 255) {
             knee = NOMOVE;
-            Serial.println("KNEE NOMOVE");
+#ifdef __DEBUG__
+            Console.println("KNEE NOMOVE");
+#endif
           }
           if (hip == 255) {
             hip = NOMOVE;
-            Serial.println("HIP NOMOVE");
+#ifdef __DEBUG__
+            Console.println("HIP NOMOVE");
+#endif
           }
           unsigned int legmask = packetData[i + 1];
           int raw = packetData[i + 4];
-          Serial.print("SETLEG:"); Serial.print(legmask, DEC); Serial.print("/"); Serial.print(knee);
-          Serial.print("/"); Serial.print(hip); Serial.print("/"); Serial.println(raw, DEC);
+#ifdef __DEBUG__
+          Console.print("SETLEG:"); Console.print(legmask, DEC); Console.print("/"); Console.print(knee);
+          Console.print("/"); Console.print(hip); Console.print("/"); Console.println(raw, DEC);
+#endif
           setLeg(legmask, knee, hip, 0, raw);
           mode = MODE_LEG;   // this stops auto-repeat of gamepad mode commands
           i += 5;  // length of leg command
@@ -2176,7 +2239,9 @@ void processPacketData() {
         } else {
           // again, we're short on bytes for this command so something is amiss
           beep(BF_ERROR, BD_MED);
-          Serial.println("PKERR:L:Short");
+#ifdef __DEBUG__
+          Console.println("PKERR:L:Short");
+#endif
           return;  // toss the rest of the packet
         }
         break;
@@ -2199,9 +2264,9 @@ void processPacketData() {
         if (i <= packetLengthReceived - 2) {
 
           unsigned int command = packetData[i + 1];
-
-          Serial.print("Trim Cmd: "); Serial.write(command); Serial.println("");
-
+#ifdef __DEBUG__
+          Console.print("Trim Cmd: "); Console.write(command); Console.println("");
+#endif
           i += 2;  // length of trim command
           startedStanding = -1; // don't sleep the legs when a specific LEG command was received
           mode = MODE_LEG;
@@ -2269,7 +2334,9 @@ void processPacketData() {
         } else {
           // again, we're short on bytes for this command so something is amiss
           beep(BF_ERROR, BD_MED);
-          Serial.println("PKERR:T:Short");
+#ifdef __DEBUG__
+          Console.println("PKERR:T:Short");
+#endif
           return;  // toss the rest of the packet
         }
         break;
@@ -2292,13 +2359,13 @@ void processPacketData() {
             if (position < 254) {
               ServoPos[servo] = position;
 
-              //Serial.print("POSE:servo="); Serial.print(servo); Serial.print(":pos="); Serial.println(position);
+              //Console.print("POSE:servo="); Console.print(servo); Console.print(":pos="); Console.println(position);
             } else if (position == 254) {
               // power down this servo
               servos[servo]->detach(); //servoDriver.setPin(servo, 0, false); // stop pulses which will quickly detach the servo
-              //Serial.print("POSE:servo="); Serial.print(servo); Serial.println(":DETACHED");
+              //Console.print("POSE:servo="); Console.print(servo); Console.println(":DETACHED");
             } else {
-              //Serial.print("POSE:servo="); Serial.print(servo); Serial.println(":pos=unchanged");
+              //Console.print("POSE:servo="); Console.print(servo); Console.println(":pos=unchanged");
             }
           }
           checkForCrashingHips();
@@ -2315,7 +2382,9 @@ void processPacketData() {
         } else {
           // again, we're short on bytes for this command so something is amiss
           beep(BF_ERROR, BD_MED);
-          Serial.println("PKERR:P:Short");
+#ifdef __DEBUG__
+          Console.println("PKERR:P:Short");
+#endif
           return;  // toss the rest of the packet
         }
         break;  // I don't think we can actually get here.
@@ -2336,8 +2405,10 @@ void processPacketData() {
         ////////////////////////////////////////////////////
         break;
       default:
-        Serial.print("PKERR:BadSW:"); Serial.print(packetData[i]);
-        Serial.print("i="); Serial.print(i); Serial.print(" RCV="); Serial.println(packetLengthReceived);
+#ifdef __DEBUG__
+        Console.print("PKERR:BadSW:"); Console.print(packetData[i]);
+        Console.print("i="); Console.print(i); Console.print(" RCV="); Console.println(packetLengthReceived);
+#endif
         beep(BF_ERROR, BD_MED);
         return;  // something is wrong, so toss the rest of the packet
     }
@@ -2448,7 +2519,7 @@ void checkForSmoothMoves() {
 
   if (abs(ServoPos[GRIPARM_ELBOW_SERVO] - GripArmElbowDestination) <= 1) {
     // uncomment the following line to debug grip elbow movement
-    //Serial.print("GA close pos="); Serial.print(ServoPos[GRIPARM_ELBOW_SERVO]); Serial.print(" dest="); Serial.println(GripArmElbowDestination);
+    //Console.print("GA close pos="); Console.print(ServoPos[GRIPARM_ELBOW_SERVO]); Console.print(" dest="); Console.println(GripArmElbowDestination);
     return; // we're close enough to the intended destination already
   }
 
@@ -2458,12 +2529,12 @@ void checkForSmoothMoves() {
   long now = millis();
   if (now >= LastSmoothMoveTime + SMOOTHINCREMENTTIME) {
     LastSmoothMoveTime = now;
-    //Serial.print("Set GAE="); Serial.println(ServoPos[GRIPARM_ELBOW_SERVO]+GripArmElbowIncrement);
+    //Console.print("Set GAE="); Console.println(ServoPos[GRIPARM_ELBOW_SERVO]+GripArmElbowIncrement);
     deferServoSet = 0;
     setServo(GRIPARM_ELBOW_SERVO, ServoPos[GRIPARM_ELBOW_SERVO] + GripArmElbowIncrement);
 
   } else {
-    //Serial.println("not time");
+    //Console.println("not time");
   }
 }
 
@@ -2488,8 +2559,6 @@ void loop() {
     Dialmode = DIALMODE_TEST;
   } else if (p < 750) {
     Dialmode = DIALMODE_DEMO;
-  } else if (p < 950) {
-    Dialmode = DIALMODE_RC_GRIPARM;
   } else {
     Dialmode = DIALMODE_RC;
   }
@@ -2507,10 +2576,10 @@ void loop() {
     return;
   }
 
-  //Serial.print("Analog0="); Serial.println(p);
+  //Console.print("Analog0="); Console.println(p);
 
   if (Dialmode == DIALMODE_STAND) { // STAND STILL MODE
-#ifndef __ULTRA_SND__
+#ifndef __DEBUG__
     digitalWrite(LED_INDICATOR, LOW);  // turn off LED in stand mode
 #endif
     delay(250);
@@ -2519,29 +2588,33 @@ void loop() {
     // in Stand mode we will also dump out all sensor values once per second to aid in debugging hardware issues
     if (millis() > ReportTime) {
       ReportTime = millis() + 1000;
-      Serial.println("Stand Mode, Sensors:");
-      //Serial.print(" A3="); Serial.print(analogRead(A3));
-      Serial.print(" A6="); Serial.print(analogRead(A6));
-      Serial.print(" A7="); Serial.print(analogRead(A7));
+#ifdef __DEBUG__
+      Console.println("Stand Mode, Sensors:");
+      Console.print(" A3=?");
+      Console.print(" A6="); Console.print(analogRead(A6));
+      Console.print(" A7="); Console.print(analogRead(A7));
 #ifdef __ULTRA_SND__
-      Serial.print(" Dist="); Serial.print(readUltrasonic());
+      Console.print(" Dist="); Console.print(readUltrasonic());
 #endif
-      Serial.println("");
+      Console.println("");
+#endif //  __DEBUG__    
     }
 
   } else if (Dialmode == DIALMODE_ADJUST) {  // Servo adjust mode, put all servos at 90 degrees
-#ifndef __ULTRA_SND__
+#ifndef __DEBUG__
     digitalWrite(LED_INDICATOR, flash(100));  // Flash LED13 rapidly in adjust mode
 #endif
     stand_90_degrees();
 
     if (millis() > ReportTime) {
       ReportTime = millis() + 1000;
-      Serial.println("AdjustMode");
+#ifdef __DEBUG__
+      Console.println("AdjustMode");
+#endif
     }
 
   } else if (Dialmode == DIALMODE_TEST) {   // Test each servo one by one
-#ifndef __ULTRA_SND__
+#ifndef __DEBUG__
     pinMode(LED_INDICATOR, flash(500));      // flash LED moderately fast in servo test mode
 #endif
     for (int i = 0; i < 2 * NUM_LEGS + NUM_GRIPSERVOS; i++) {
@@ -2558,35 +2631,41 @@ void loop() {
       delay(500);
       setServo(i, 90);
       delay(100);
-      Serial.print("SERVO: "); Serial.println(i);
+#ifdef __DEBUG__
+      Console.print("SERVO: "); Console.println(i);
+#endif
     }
 
   } else if (Dialmode == DIALMODE_DEMO) {  // demo mode
-#ifndef __ULTRA_SND__
+#ifndef __DEBUG__
     digitalWrite(LED_INDICATOR, flash(2000));  // flash LED very slowly in demo mode
 #endif
     random_gait(timingfactor);
     if (millis() > ReportTime) {
       ReportTime = millis() + 1000;
-      Serial.println("Demo Mode");
+#ifdef __DEBUG__
+      Console.println("Demo Mode");
+#endif
     }
     return;
 
   } else { // bluetooth mode (regardless of whether it's with or without the grip arm)
-#ifndef __ULTRA_SND__
+#ifndef __DEBUG__
     digitalWrite(LED_INDICATOR, HIGH);   // LED is set to steady on in bluetooth mode
 #endif
     if (millis() > ReportTime) {
       ReportTime = millis() + 2000;
-      Serial.print("RC Mode:");
-      Serial.print(ServosDetached);
-      Serial.write(lastCmd);
-      Serial.write(mode);
-      Serial.write(submode);
-      Serial.println("");
+#ifdef __DEBUG__
+      Console.print("RC Mode:");
+      Console.print(ServosDetached);
+      Console.write(lastCmd);
+      Console.write(mode);
+      Console.write(submode);
+      Console.println("");
+#endif
     }
     int gotnewdata = receiveDataHandler();  // handle any new incoming data first
-    //Serial.print(gotnewdata); Serial.print(" ");
+    //Console.print(gotnewdata); Console.print(" ");
 
     // if its been more than 1 second since we got a valid bluetooth command
     // then for safety just stand still.
@@ -2594,19 +2673,26 @@ void loop() {
     if (millis() > LastValidReceiveTime + 1000) {
       if (millis() > LastValidReceiveTime + 15000) {
         // after 15 full seconds of not receiving a valid command, reset the bluetooth connection
-        Serial.println("Loss of Signal: resetting bluetooth");
+#ifdef __DEBUG__
+        Console.println("Loss of Signal: resetting bluetooth");
+#endif
         // Make a three tone chirp to indicate reset
         beep(200, 40); // loss of connection test
         delay(100);
         beep(400, 40);
         delay(100);
         beep(600, 40);
-        BlueTooth.begin(38400);
+        BlueTooth.begin(BLUETOOTH_BAUD);
+#ifdef __DEBUG__        
+        //BlueTooth.println("bluetooth reseted.");
+#endif        
         LastReceiveTime = LastValidReceiveTime = millis();
         lastCmd = -1;  // for safety put it in stop mode
       }
       long losstime = millis() - LastValidReceiveTime;
-      Serial.print("LOS "); Serial.println(losstime);  // LOS stands for "Loss of Signal"
+#ifdef __DEBUG__
+      //Console.print("LOS "); Console.println(losstime);  // LOS stands for "Loss of Signal"
+#endif
       return;  // don't repeat commands if we haven't seen valid data in a while
     }
 
@@ -2614,7 +2700,7 @@ void loop() {
       // we didn't receive any new instructions so repeat the last command unless it was binary
       // or unless we're in fight adjust mode
       if (lastCmd == -1) {
-        //Serial.println("REP");
+        //Console.println("REP");
         return;
       }
 
@@ -2623,7 +2709,7 @@ void loop() {
       // a packet because otherwise they'll zoom right to the end state instead
       // of giving the user a chance to make fine adjustments to position
       if (mode == MODE_FIGHT && (submode == SUBMODE_3 || submode == SUBMODE_4)) {
-        //Serial.print("f");
+        //Console.print("f");
         return;
       }
 
@@ -2642,7 +2728,7 @@ void loop() {
     }
     // Leg set mode should also not be repeated
     if (mode == MODE_LEG) {
-      //Serial.print("l");
+      //Console.print("l");
       return;
     } else if (mode == MODE_GAIT) {
       // repeat the last Gait command (from scratch typically)
@@ -2658,7 +2744,7 @@ void loop() {
     if (ScamperTracker < 0) {
       ScamperTracker = 0;
     } else {
-      //Serial.println(ScamperTracker);
+      //Console.println(ScamperTracker);
     }
 
     switch (lastCmd) {
@@ -2860,7 +2946,7 @@ void loop() {
           dance_hands(lastCmd);
         } else {
           if (millis() - startedStanding > BATTERYSAVER) {
-            //Serial.print("DET LC=");Serial.write(lastCmd); Serial.println("");
+            //Console.print("DET LC=");Console.write(lastCmd); Console.println("");
             detach_all_servos();
             return;
           }
@@ -2873,7 +2959,9 @@ void loop() {
         break;
 
       default:
-        Serial.print("BAD CHAR:"); Serial.write(lastCmd); Serial.println("");
+#ifdef __DEBUG__
+        //Console.print("BAD CHAR:"); Console.write(lastCmd); Console.println("");
+#endif
         beep(100, 20);
     }  // end of switch
   }  // end of main if statement
