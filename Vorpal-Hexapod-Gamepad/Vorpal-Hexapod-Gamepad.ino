@@ -138,7 +138,7 @@ SdFat SD;
 // and they correspond to dpad directions (weapon is the extra dpad button, stop is the lack of any button being pressed).
 
 
-SoftwareSerial BlueTooth(A4, A5); // connect bluetooth module Tx=A5=Yellow wire Rx=A4=Green Wire
+SoftwareSerial BlueTooth(A5, A4); // connect bluetooth module Tx=A5=Yellow wire Rx=A4=Green Wire
 // although not intuitive, the analog ports function just fine as digital ports for this purpose
 // and in order to keep the wiring simple for the 4x4 button matrix as well as the SPI lines needed
 // for the SD card, it was necessary to use analog ports for the bluetooth module.
