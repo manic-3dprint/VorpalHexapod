@@ -145,8 +145,8 @@ byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidl
 #define DIAL_PIN A3
 #ifdef __DEBUG__
 #include <SoftwareSerial.h>
-#define BT_RX A4
-#define BT_TX A5
+#define BT_TX A4
+#define BT_RX A5
 #else
 #define LED_INDICATOR A4
 #endif
@@ -2659,9 +2659,9 @@ void loop() {
 #ifdef __DEBUG__
       Console.print("RC Mode:");
       Console.print(ServosDetached);
-      Console.write(lastCmd);
       Console.write(mode);
       Console.write(submode);
+      Console.write(lastCmd);
       Console.println("");
 #endif
     }
@@ -2674,9 +2674,11 @@ void loop() {
     if (millis() > LastValidReceiveTime + 1000) {
       if (millis() > LastValidReceiveTime + 15000) {
         // after 15 full seconds of not receiving a valid command, reset the bluetooth connection
+/*        
 #ifdef __DEBUG__
         Console.println("Loss of Signal: resetting bluetooth");
 #endif
+
         // Make a three tone chirp to indicate reset
         beep(200, 40); // loss of connection test
         delay(100);
@@ -2684,9 +2686,11 @@ void loop() {
         delay(100);
         beep(600, 40);
         BlueTooth.begin(BLUETOOTH_BAUD);
-#ifdef __DEBUG__        
+
+#ifdef __DEBUG__
         //BlueTooth.println("bluetooth reseted.");
-#endif        
+#endif
+*/
         LastReceiveTime = LastValidReceiveTime = millis();
         lastCmd = -1;  // for safety put it in stop mode
       }
@@ -2946,11 +2950,13 @@ void loop() {
         } else if (mode == MODE_DANCE && submode == SUBMODE_4) {
           dance_hands(lastCmd);
         } else {
-          if (millis() - startedStanding > BATTERYSAVER) {
-            //Console.print("DET LC=");Console.write(lastCmd); Console.println("");
-            detach_all_servos();
-            return;
-          }
+          /*
+                    if (millis() - startedStanding > BATTERYSAVER) {
+                      //Console.print("DET LC=");Console.write(lastCmd); Console.println("");
+                      detach_all_servos();
+                      return;
+                    }
+          */
           stand();
         }
         break;
