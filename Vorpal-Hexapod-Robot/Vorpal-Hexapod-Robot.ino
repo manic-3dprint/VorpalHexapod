@@ -135,19 +135,20 @@ byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidl
 #define __DEBUG__
 //#define __ULTRA_SND__
 
-#ifdef __DEBUG__
-#include <SoftwareSerial.h>
-#define BT_TX A0
-#define BT_RX A1
-#else
-#define LED_INDICATOR A1
+
+// pins assignment
+#ifdef __ULTRA_SND__
+#define ULTRAOUTPUTPIN A0    // TRIG
+#define ULTRAINPUTPIN  A1     // ECHO
 #endif
-//
 #define BeeperPin A2           // digital A2 used for beeper
 #define DIAL_PIN A3
-#ifdef __ULTRA_SND__
-#define ULTRAOUTPUTPIN A4     // TRIG
-#define ULTRAINPUTPIN  A5     // ECHO
+#ifdef __DEBUG__
+#include <SoftwareSerial.h>
+#define BT_RX A4
+#define BT_TX A5
+#else
+#define LED_INDICATOR A4
 #endif
 #define GripElbowCurrentPin A6  // current sensor for grip arm elbow servo, only used if GRIPARM mode
 #define GripClawCurrentPin  A7  // current sensor for grip claw servo, only used if GRIPARM mode
@@ -317,7 +318,7 @@ int Dialmode;   // What's the robot potentiometer set to?
   #define BLUETOOTH_BAUD CONSOLE_BAUD
 */
 #ifdef __DEBUG__
-SoftwareSerial BlueTooth(A0, A1);
+SoftwareSerial BlueTooth(BT_RX, BT_TX);
 #else
 #define BlueTooth Serial
 #endif
