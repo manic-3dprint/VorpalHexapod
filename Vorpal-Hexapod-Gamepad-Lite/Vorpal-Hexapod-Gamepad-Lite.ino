@@ -65,9 +65,12 @@ int sendbeep(int noheader) {
 }
 
 long period;
-const int SW_pin = 2; // digital pin connected to switch output
-const int X_pin = A0; // analog pin connected to X output
-const int Y_pin = A1; // analog pin connected to Y output
+const int SW1_pin = 5;
+const int X1_pin = A2;
+const int Y1_pin = A3;
+const int SW2_pin = 7;
+const int X2_pin = A0;
+const int Y2_pin = A1;
 
 void setup() {
   Serial.begin(38400);
@@ -76,8 +79,10 @@ void setup() {
   }
   Serial.println("started!");
   //
-  pinMode(SW_pin, INPUT);
-  digitalWrite(SW_pin, HIGH);
+  pinMode(SW1_pin, INPUT);
+  digitalWrite(SW1_pin, HIGH);
+  pinMode(SW2_pin, INPUT);
+  digitalWrite(SW2_pin, HIGH);
   //
   mySerial.begin(38400);
   bleDataMode();
@@ -85,31 +90,46 @@ void setup() {
 }
 
 void loop() {
-  char CurCmd = 'W';
+  static char CurCmd = 'W';
   char CurSubCmd, CurSubCmds[] = {'1', '2', '3', '4'};
   char CurDpad;
-  int button = 0, xx, yy;
-  static int c = 3;
+  int button = 0, xx1, yy1, xx2, yy2;
+  static int subCmdIndex = 3, cmdIndex = 0;
 
-  button = digitalRead(SW_pin);
+  button = digitalRead(SW2_pin);
   if (!button) {
-    c = (c + 1) % 4;
+    subCmdIndex = (subCmdIndex + 1) % 4;
   }
-  CurSubCmd = CurSubCmds[c];
+  CurSubCmd = CurSubCmds[subCmdIndex];
+  //
+  xx2 = analogRead(X2_pin);
+  if (xx2 == 0) {
+    CurCmd = 'F';
+  } else if (xx2 == 1023) {
+    CurCmd = 'D';
+  }
+  yy2 = analogRead(Y2_pin);
+  if (yy2 == 0 || yy2 == 1023) {
+    CurCmd = 'W';
+  }
   CurDpad = 's';
-  xx = analogRead(X_pin);
-  if (xx == 0) {
+  //
+  xx1 = analogRead(X1_pin);
+  if (xx1 == 0) {
     CurDpad = 'l';
-  } else if (xx == 1023) {
+  } else if (xx1 == 1023) {
     CurDpad = 'r';
   }
-  yy = analogRead(Y_pin);
-  if (yy == 0) {
+  yy1 = analogRead(Y1_pin);
+  if (yy1 == 0) {
     CurDpad = 'f';
-  } else if (yy == 1023) {
+  } else if (yy1 == 1023) {
     CurDpad = 'b';
+  }  
+  button = digitalRead(SW1_pin);
+  if (!button) {
+    CurDpad = 'w';
   }
-
   if (millis() >= period) {
     BlueTooth.print("V1"); // Vorpal hexapod radio protocol header version 1
     int three = 3;
@@ -118,11 +138,11 @@ void loop() {
     BlueTooth.write(CurSubCmd);
     BlueTooth.write(CurDpad);
     //unsigned int checksum = sendbeep(0);
-     unsigned int checksum=0;
+    unsigned int checksum = 0;
     checksum += three + CurCmd + CurSubCmd + CurDpad;
     checksum = (checksum % 256);
     BlueTooth.write(checksum);
-    period = millis() + 500;
+    period = millis() + 200;
     Serial.print("#NOPL:"); Serial.print(CurCmd); Serial.print(CurSubCmd); Serial.println(CurDpad);
   }
 }
