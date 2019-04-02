@@ -23,7 +23,10 @@ const int Y1_pin = A3;
 const int SW2_pin = 7;
 const int X2_pin = A0;
 const int Y2_pin = A1;
-
+//
+const int led_g = 2;
+const int led_r = 3;
+const int led_b = 4;
 
 void setup() {
   Console.begin(CONSOLE_BAUD);
@@ -37,6 +40,13 @@ void setup() {
   pinMode(SW2_pin, INPUT);
   digitalWrite(SW2_pin, HIGH);
   //
+  pinMode(led_g, OUTPUT);
+  digitalWrite(led_g, LOW);
+  pinMode(led_r, OUTPUT);
+  digitalWrite(led_r, LOW);
+  pinMode(led_b, OUTPUT);
+  digitalWrite(led_b, LOW);
+  //
 #ifdef __DEBUG__
   BlueTooth.begin(BLUETOOTH_BAUD);
 #endif
@@ -44,7 +54,32 @@ void setup() {
 #ifdef __CC2540_BLE__
   bleDataMode();
 #endif
+  setOn(1);
+}
 
+void setOn(int i) {
+  bool state = HIGH;
+  switch (i) {
+    case 0:
+      digitalWrite(led_g, state);
+      digitalWrite(led_r, !state);
+      digitalWrite(led_b, !state);
+      break;
+    case 1:
+      digitalWrite(led_g, !state);
+      digitalWrite(led_r, state);
+      digitalWrite(led_b, !state);
+      break;
+    case 2:
+      digitalWrite(led_g, !state);
+      digitalWrite(led_r, !state);
+      digitalWrite(led_b, state);
+      break;
+    default:
+      digitalWrite(led_g, !state);
+      digitalWrite(led_r, !state);
+      digitalWrite(led_b, !state);
+  }
 }
 
 void loop() {
@@ -71,12 +106,16 @@ void loop() {
   xx2 = analogRead(X2_pin);
   if (xx2 == 0) {
     CurCmd = 'F';
+    setOn(0);
   } else if (xx2 == 1023) {
     CurCmd = 'D';
-  }
-  yy2 = analogRead(Y2_pin);
-  if (yy2 == 0 || yy2 == 1023) {
-    CurCmd = 'W';
+    setOn(2);
+  } else {
+    yy2 = analogRead(Y2_pin);
+    if (yy2 == 0 || yy2 == 1023) {
+      CurCmd = 'W';
+      setOn(1);
+    }
   }
   CurDpad = 's';
   //
@@ -128,9 +167,9 @@ boolean bleDataMode() {
   BlueTooth.print("AT+INQ\r\n");
   while (!connected) {
     if (millis() >= timeout) {
-#ifdef __DEBUG__      
+#ifdef __DEBUG__
       Console.println("Init BLE timeout!");
-#endif      
+#endif
       break;
     }
     if (!BlueTooth.available()) continue;
@@ -138,9 +177,9 @@ boolean bleDataMode() {
     if (ch == 0x0d) continue;
     if (ch == 0x0a) { // NL char, recevied end of string
       buf[c] = 0; c = 0;
-#ifdef __DEBUG__      
+#ifdef __DEBUG__
       Console.println(buf);
-#endif      
+#endif
       if (strcmp(buf, "+INQE") == 0) {
         BlueTooth.print("AT+CONN1\r\n");
       } else if (strcmp(buf, "+Connected") == 0) {
