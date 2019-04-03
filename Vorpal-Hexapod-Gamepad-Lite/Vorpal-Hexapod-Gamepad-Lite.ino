@@ -27,6 +27,8 @@ const int Y2_pin = A1;
 const int led_g = 2;
 const int led_r = 3;
 const int led_b = 4;
+//
+const int buzzer = 9;
 
 void setup() {
   Console.begin(CONSOLE_BAUD);
@@ -39,6 +41,9 @@ void setup() {
   digitalWrite(SW1_pin, HIGH);
   pinMode(SW2_pin, INPUT);
   digitalWrite(SW2_pin, HIGH);
+  //
+  pinMode(buzzer, OUTPUT);
+  digitalWrite(buzzer, LOW);
   //
   pinMode(led_g, OUTPUT);
   digitalWrite(led_g, LOW);
@@ -82,6 +87,23 @@ void setOn(int i) {
   }
 }
 
+void beep(int f, int t) {
+  if (f > 0 && t > 0) {
+    tone(buzzer, f, t);
+  } else {
+    noTone(buzzer);
+  }
+}
+
+inline void beep(int f) {
+  beep(f, 250);
+}
+
+inline void changeCmdBeep() {
+  beep(100, 100);
+  beep(400, 100);
+}
+
 void loop() {
   static long cmdPeriod = 0;
   static long buttonPeriod = 0;
@@ -98,6 +120,7 @@ void loop() {
   if (sw2ButtonState != sw2PrevButtonState) {
     if (!sw2ButtonState) {
       subCmdIndex = (subCmdIndex + 1) % 4;
+      beep(50);
     }
     sw2PrevButtonState = sw2ButtonState;
   }
@@ -107,14 +130,17 @@ void loop() {
   if (xx2 == 0) {
     CurCmd = 'F';
     setOn(0);
+    changeCmdBeep();
   } else if (xx2 == 1023) {
     CurCmd = 'D';
     setOn(2);
+    changeCmdBeep();
   } else {
     yy2 = analogRead(Y2_pin);
     if (yy2 == 0 || yy2 == 1023) {
       CurCmd = 'W';
       setOn(1);
+      changeCmdBeep();
     }
   }
   CurDpad = 's';
@@ -160,12 +186,17 @@ boolean bleDataMode() {
   int c = 0;
   bool connected = false;
   long timeout = millis() + 20000;
+  long beepTimeout = millis() + 1000;
 
 #ifdef __DEBUG__
   Console.println("Init BLE data mode...");
 #endif
   BlueTooth.print("AT+INQ\r\n");
   while (!connected) {
+    if (millis() >= beepTimeout) {
+      beep(30);
+      beepTimeout = millis() + 1000;
+    }
     if (millis() >= timeout) {
 #ifdef __DEBUG__
       Console.println("Init BLE timeout!");
@@ -191,7 +222,15 @@ boolean bleDataMode() {
 #ifdef __DEBUG__
   if (connected)
     Console.println("Init BLE data mode,done.");
+  else {
+    beep(200, 100);
+    delay(100);
+    beep(400, 100);
+    delay(100);
+    beep(600, 100);
+  }
 #endif
+
   return connected;
 }
 #endif
