@@ -104,17 +104,18 @@ inline void changeCmdBeep() {
   beep(400, 100);
 }
 
+char CurCmd = 'W';
+const char CurSubCmds[] = {'1', '2', '3', '4'};
+int subCmdIndex = 3;
+char CurSubCmd = CurSubCmds[subCmdIndex];
+char CurDpad = 's';
+
 void loop() {
-  static long cmdPeriod = 0;
-  static long buttonPeriod = 0;
-  static char CurCmd = 'W';
-  char CurSubCmd, CurSubCmds[] = {'1', '2', '3', '4'};
-  char CurDpad;
   int xx1, yy1, xx2, yy2;
-  static int subCmdIndex = 3, cmdIndex = 0;
   boolean sw1ButtonState = false, sw2ButtonState = false;
   static boolean sw2PrevButtonState = false;
-
+  static long cmdPeriod = 0;
+  static long buttonPeriod = 0;
 
   sw2ButtonState = digitalRead(SW2_pin);
   if (sw2ButtonState != sw2PrevButtonState) {
@@ -162,21 +163,31 @@ void loop() {
     CurDpad = 'w';
   }
   if (millis() >= cmdPeriod) {
-    BlueTooth.print("V1"); // Vorpal hexapod radio protocol header version 1
-    int three = 3;
-    BlueTooth.write(three);
-    BlueTooth.write(CurCmd);
-    BlueTooth.write(CurSubCmd);
-    BlueTooth.write(CurDpad);
+    switch (CurCmd) {
+      case 'W':
+      case 'F':
+      case 'D': {
+          BlueTooth.print("V1"); // Vorpal hexapod radio protocol header version 1
+          int three = 3;
+          BlueTooth.write(three);
+          BlueTooth.write(CurCmd);
+          BlueTooth.write(CurSubCmd);
+          BlueTooth.write(CurDpad);
 
-    unsigned int checksum = 0;
-    checksum += three + CurCmd + CurSubCmd + CurDpad;
-    checksum = (checksum % 256);
-    BlueTooth.write(checksum);
-    cmdPeriod = millis() + 200;
+          unsigned int checksum = 0;
+          checksum += three + CurCmd + CurSubCmd + CurDpad;
+          checksum = (checksum % 256);
+          BlueTooth.write(checksum);
+          cmdPeriod = millis() + 200;
 #ifdef __DEBUG__
-    Console.print("#NOPL:"); Console.print(CurCmd); Console.print(CurSubCmd); Console.println(CurDpad);
+          Console.print("#NOPL:"); Console.print(CurCmd); Console.print(CurSubCmd); Console.println(CurDpad);
 #endif
+        }
+        break;
+      default:
+        CurCmd = 'W';
+        CurSubCmd = '1';
+    }
   }
 }
 
