@@ -2,7 +2,7 @@
 
 
 #define __DEBUG__
-#define __CC2540_BLE__
+//#define __CC2540_BLE__
 
 #define CONSOLE_BAUD 38400
 #define BLUETOOTH_BAUD 38400
@@ -130,10 +130,12 @@ void loop() {
   xx2 = analogRead(X2_pin);
   if (xx2 == 0) {
     CurCmd = 'F';
+    CurSubCmd = CurSubCmds[subCmdIndex=0];
     setOn(0);
     changeCmdBeep();
   } else if (xx2 == 1023) {
     CurCmd = 'D';
+    CurSubCmd = CurSubCmds[subCmdIndex=0];
     setOn(2);
     changeCmdBeep();
   } else {
