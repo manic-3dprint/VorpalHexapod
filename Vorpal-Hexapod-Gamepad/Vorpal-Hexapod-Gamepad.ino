@@ -313,15 +313,15 @@ char decode_button(int b) {
   // returning. Modify the code below to return the correct values for each
   // button.
 
-  if (b < 100) {
+  if (b < 10) {
     return 'b';  // backward (bottom button)
-  } else if (b < 200) {
+  } else if (b < 50) {
     return 'l';  // left
-  } else if (b < 400) {
+  } else if (b < 100) {
     return 'r';   // right
-  } else if (b < 600) {
+  } else if (b < 200) {
     return 'f';  // forward (top of diamond)
-  } else if (b < 850) {
+  } else if (b < 400) {
     return 'w';  // weapon (very top button) In the documentation this button is called "Special"
     // but a long time ago we called it "weapon" because it was used in some other
     // robot projects that were fighting robots. The code still uses "w" since "s" means stop.
