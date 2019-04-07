@@ -133,6 +133,7 @@ byte SomeLegsUp = 0;  // this is a flag to detect situations where a user rapidl
 // This is not needed for analog servos and it is not needed for the Vorpal MG90 branded servos.
 //
 #define __DEBUG__
+//#define __VORPAL_FRAME__
 //#define __ULTRA_SND__
 
 
@@ -1672,7 +1673,7 @@ void setServo(int servonum, int position) {
   }
   if (!deferServoSet && servos[servonum]->attached()) {
 
-    //#define __VORPAL_FRAME__
+
 #ifdef __VORPAL_FRAME__
     servos[servonum]->write(position);
 #else
@@ -1849,7 +1850,7 @@ unsigned int packetLengthReceived = 0;
 int packetState = P_WAITING_FOR_HEADER;
 
 void packetErrorChirp(char c) {
-  beep(70, 8);
+  //beep(70, 8);
 #ifdef __DEBUG__
   Console.print(" BTER:"); Console.print(packetState); Console.print(c);
   //Console.print("("); Console.print(c,DEC); Console.print(")");
@@ -2585,13 +2586,13 @@ void loop() {
 #endif
     delay(250);
     stand();
-    setGrip(90, 90);  // in stand mode set the grip arms to neutral positions
+    // setGrip(90, 90);  // in stand mode set the grip arms to neutral positions
     // in Stand mode we will also dump out all sensor values once per second to aid in debugging hardware issues
     if (millis() > ReportTime) {
       ReportTime = millis() + 1000;
 #ifdef __DEBUG__
       Console.println("Stand Mode, Sensors:");
-      Console.print(" A3=?");
+      Console.print(" A3=0");
       Console.print(" A6="); Console.print(analogRead(A6));
       Console.print(" A7="); Console.print(analogRead(A7));
 #ifdef __ULTRA_SND__
@@ -2674,9 +2675,9 @@ void loop() {
     if (millis() > LastValidReceiveTime + 1000) {
       if (millis() > LastValidReceiveTime + 15000) {
         // after 15 full seconds of not receiving a valid command, reset the bluetooth connection
-/*        
+        
 #ifdef __DEBUG__
-        Console.println("Loss of Signal: resetting bluetooth");
+        Console.println("Loss of Signal: not receiving any commands from gamepad.");
 #endif
 
         // Make a three tone chirp to indicate reset
@@ -2685,14 +2686,13 @@ void loop() {
         beep(400, 40);
         delay(100);
         beep(600, 40);
-        BlueTooth.begin(BLUETOOTH_BAUD);
+//        BlueTooth.end();
+//        BlueTooth.begin(BLUETOOTH_BAUD);
 
-#ifdef __DEBUG__
-        //BlueTooth.println("bluetooth reseted.");
-#endif
-*/
         LastReceiveTime = LastValidReceiveTime = millis();
-        lastCmd = -1;  // for safety put it in stop mode
+        lastCmd = 's';  // for safety put it in stop of walk mode
+        mode='W';
+        submode='1';               
       }
       long losstime = millis() - LastValidReceiveTime;
 #ifdef __DEBUG__
