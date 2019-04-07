@@ -1034,7 +1034,10 @@ void setup() {
   // after this point you can't flash the led on pin 13 because we're using it for SD card
 
   BlueTooth.begin(38400);
+//#define __CC2540_BLE__  
+#ifdef __CC2540_BLE__
   bleDataMode();
+#endif  
   Serial.println(Version);
 
   pinMode(A0, OUTPUT);  // extra ground for additional FTDI port if needed
