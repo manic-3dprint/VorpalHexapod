@@ -14,19 +14,19 @@ SoftwareSerial BlueTooth(A5, A4);
 #define BlueTooth Serial
 #endif
 
-//left hand side joystick
-const int SW1_pin = 5;
-const int X1_pin = A2;
-const int Y1_pin = A3;
-
 // right hand side joystick
-const int SW2_pin = 7;
-const int X2_pin = A0;
-const int Y2_pin = A1;
+const int SW1_pin =7;
+const int X1_pin = A0;
+const int Y1_pin = A1;
+
+// left hand side joystick
+const int SW2_pin = 6;
+const int X2_pin = A2;
+const int Y2_pin = A3;
 //
-const int led_g = 2;
-const int led_r = 3;
-const int led_b = 4;
+const int led_g = 2; // D
+const int led_r = 3; // W
+const int led_b = 4; // F
 //
 const int buzzer = 9;
 
@@ -129,12 +129,12 @@ void loop() {
   //
   xx2 = analogRead(X2_pin);
   if (xx2 == 0) {
-    CurCmd = 'F';
+    CurCmd = 'D';
     CurSubCmd = CurSubCmds[subCmdIndex=0];
     setOn(0);
     changeCmdBeep();
   } else if (xx2 == 1023) {
-    CurCmd = 'D';
+    CurCmd = 'F';
     CurSubCmd = CurSubCmds[subCmdIndex=0];
     setOn(2);
     changeCmdBeep();
@@ -142,6 +142,7 @@ void loop() {
     yy2 = analogRead(Y2_pin);
     if (yy2 == 0 || yy2 == 1023) {
       CurCmd = 'W';
+      CurSubCmd = CurSubCmds[subCmdIndex=3];
       setOn(1);
       changeCmdBeep();
     }
@@ -150,15 +151,15 @@ void loop() {
   //
   xx1 = analogRead(X1_pin);
   if (xx1 < 300) {
-    CurDpad = 'b';
-  } else if (xx1 > 900) {
     CurDpad = 'f';
+  } else if (xx1 > 900) {
+    CurDpad = 'b';
   }
   yy1 = analogRead(Y1_pin);
   if (yy1 < 300) {
-    CurDpad = 'l';
-  } else if (yy1 > 900) {
     CurDpad = 'r';
+  } else if (yy1 > 900) {
+    CurDpad = 'l';
   }
   sw1ButtonState = digitalRead(SW1_pin);
   if (!sw1ButtonState) {
