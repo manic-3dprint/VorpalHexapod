@@ -176,8 +176,8 @@ SoftwareSerial BlueTooth(A5, A4); // connect bluetooth module Tx=A5=Yellow wire 
 
 // definitions to decode the 4x4 button matrix
 
-#define MATRIX_ROW_START 6
-#define MATRIX_COL_START 2
+#define MATRIX_ROW_START 6 // pin 6 to 9
+#define MATRIX_COL_START 2 // pin 2 to 5
 #define MATRIX_NROW 4
 #define MATRIX_NCOL 4
 
