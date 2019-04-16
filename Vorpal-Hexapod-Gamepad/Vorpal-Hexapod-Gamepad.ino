@@ -168,11 +168,17 @@ SoftwareSerial BlueTooth(A5, A4); // connect bluetooth module Tx=A5=Yellow wire 
 #define REC_ERASE 15
 
 // Pin definitions
+// joystick pins
+const int SW1_pin = 10;
+const int X1_pin = A0;
+const int Y1_pin = A1;
 
-#define DpadPin A1
-#define VCCA1 A2    // we play a trick to power the dpad buttons, use adjacent unusued analog ports for power
-#define GNDA1 A3    // Yes, you can make an analog port into a digital output!
-#define SDCHIPSELECT 10   // chip select pin for the SD card reader
+/*
+  #define DpadPin A1
+  #define VCCA1 A2    // we play a trick to power the dpad buttons, use adjacent unusued analog ports for power
+  #define GNDA1 A3    // Yes, you can make an analog port into a digital output!
+*/
+#define SDCHIPSELECT A2   // chip select pin for the SD card reader
 
 // definitions to decode the 4x4 button matrix
 
@@ -300,34 +306,31 @@ int scanmatrix() {
 // to test out your dpad to find reasonable values and change
 // the values below.
 
-char decode_button(int b) {
-
+char decode_joystick() {
+  char CurDpad = 's';
 #if DEPADDEBUG
   Serial.print("DPAD: "); Serial.println(b);
 #endif
 
-  // If your DPAD is doing the wrong things for each button, and you didn't
-  // purchase it from Vorpal Robotics, LLC, then you may have a defective
-  // DPAD module that outputs nonstandard values. Turn on DEPADDEBUG mode,
-  // then use the serial monitor to find out what values your buttons are
-  // returning. Modify the code below to return the correct values for each
-  // button.
-
-  if (b < 10) {
-    return 'b';  // backward (bottom button)
-  } else if (b < 50) {
-    return 'l';  // left
-  } else if (b < 100) {
-    return 'r';   // right
-  } else if (b < 200) {
-    return 'f';  // forward (top of diamond)
-  } else if (b < 400) {
-    return 'w';  // weapon (very top button) In the documentation this button is called "Special"
-    // but a long time ago we called it "weapon" because it was used in some other
-    // robot projects that were fighting robots. The code still uses "w" since "s" means stop.
-  } else {
-    return 's';  // stop (no button is pressed)
+  CurDpad = 's';
+  //
+  int xx1 = analogRead(X1_pin);
+  if (xx1 < 300) {
+    CurDpad = 'r';
+  } else if (xx1 > 900) {
+    CurDpad = 'l';
   }
+  int yy1 = analogRead(Y1_pin);
+  if (yy1 < 300) {
+    CurDpad = 'f';
+  } else if (yy1 > 900) {
+    CurDpad = 'b';
+  }
+  bool sw1ButtonState = digitalRead(SW1_pin);
+  if (!sw1ButtonState) {
+    CurDpad = 'w';
+  }
+  return CurDpad;
 }
 
 //////////////////////////////////////////////////////////
@@ -1025,6 +1028,10 @@ void setup() {
     SDCardFormat();
     Serial.println("#sdfmt done");
   }
+  //
+  pinMode(SW1_pin, INPUT);
+  digitalWrite(SW1_pin, HIGH);
+
   // make a characteristic flashing pattern to indicate the gamepad code is loaded.
   pinMode(13, OUTPUT);
   for (int i = 0; i < 3; i++) {
@@ -1034,18 +1041,13 @@ void setup() {
   // after this point you can't flash the led on pin 13 because we're using it for SD card
 
   BlueTooth.begin(38400);
-//#define __CC2540_BLE__  
+  //#define __CC2540_BLE__
 #ifdef __CC2540_BLE__
   bleDataMode();
-#endif  
+#endif
   Serial.println(Version);
 
-  pinMode(A0, OUTPUT);  // extra ground for additional FTDI port if needed
-  digitalWrite(A0, LOW);
-  pinMode(VCCA1, OUTPUT);
-  pinMode(GNDA1, OUTPUT);
-  digitalWrite(GNDA1, LOW);
-  digitalWrite(VCCA1, HIGH);
+
   pinMode(SDCHIPSELECT, OUTPUT);
   digitalWrite(SDCHIPSELECT, HIGH); // chip select for SD card
 
@@ -1060,7 +1062,7 @@ boolean bleDataMode() {
   int c = 0;
   bool connected = false;
   long timeout = millis() + 20000;
-  
+
   Serial.println("Init BLE data mode...");
   BlueTooth.print("AT+INQ\r\n");
   while (!connected) {
@@ -1310,7 +1312,8 @@ void loop() {
   }
 #endif
   int matrix = scanmatrix();
-  CurDpad = decode_button(analogRead(DpadPin));
+  CurDpad = decode_joystick();
+
 
   if (debugmode && matrix != -1) {
     Serial.print("#MA:LC="); Serial.print(longClick); Serial.print("m:"); Serial.println(matrix);
