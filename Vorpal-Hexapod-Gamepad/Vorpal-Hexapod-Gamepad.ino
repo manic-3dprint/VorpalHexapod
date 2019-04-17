@@ -411,7 +411,7 @@ void setBeep(int f, int d) {
 ///  is bundled with Arduino IDE) cannot handle FAT12. The SD associations standards typically make cards
 ///  64mb or smaller FAT12, making them unusable unless you use this function of the gamepad.
 
-#define SD_CSPIN 10  // the CS pin
+#define SD_CSPIN SDCHIPSELECT  // the CS pin
 
 // Initialize at highest supported speed not over 50 MHz.
 // Reduce max speed if errors occur.
