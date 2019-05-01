@@ -169,9 +169,9 @@ SoftwareSerial BlueTooth(A5, A4); // connect bluetooth module Tx=A5=Yellow wire 
 
 // Pin definitions
 // joystick pins
-const int SW1_pin = 10;
-const int X1_pin = A0;
-const int Y1_pin = A1;
+#define SW_PIN  10
+#define VRX_PIN   A0
+#define VRY_PIN   A1
 
 /*
   #define DpadPin A1
@@ -314,19 +314,19 @@ char decode_joystick() {
 
   CurDpad = 's';
   //
-  int xx1 = analogRead(X1_pin);
+  int xx1 = analogRead(VRY_PIN);
   if (xx1 < 300) {
     CurDpad = 'r';
   } else if (xx1 > 900) {
     CurDpad = 'l';
   }
-  int yy1 = analogRead(Y1_pin);
+  int yy1 = analogRead(VRX_PIN);
   if (yy1 < 300) {
     CurDpad = 'f';
   } else if (yy1 > 900) {
     CurDpad = 'b';
   }
-  bool sw1ButtonState = digitalRead(SW1_pin);
+  bool sw1ButtonState = digitalRead(SW_PIN);
   if (!sw1ButtonState) {
     CurDpad = 'w';
   }
@@ -1029,8 +1029,8 @@ void setup() {
     Serial.println("#sdfmt done");
   }
   //
-  pinMode(SW1_pin, INPUT);
-  digitalWrite(SW1_pin, HIGH);
+  pinMode(SW_PIN, INPUT);
+  digitalWrite(SW_PIN, HIGH);
 
   // make a characteristic flashing pattern to indicate the gamepad code is loaded.
   pinMode(13, OUTPUT);
