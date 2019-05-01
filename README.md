@@ -1,9 +1,9 @@
-# VorpalHexapodArduino
-Arduino code for both the Vorpal Hexapod and Vorpal Hexapod Gamepad.
+# VorpalHexapodHuaDuino
+Arduino code for both the Vorpal Hexapod and Vorpal Hexapod Gamepad using [HuaDuino](https://www.ebay.com/itm/312249230239). 
 
 This is the Arduino IDE code for the current version of the Vorpal Hexapod Project.
 
-To compile it you need the latest CMUCAM5 (Pixie) library, and also the Adafruit 16 Channel Servo Controller Library.
+HuaDuino is Arduino Nano compatible with enhanced features. It integrates everything on a single PCB. It's a lot easier for people to make a bot. Embedded battery charging circuit, battery charging is more convenient.
 
 PROJECT WIKI
 -----------------------------
@@ -17,7 +17,6 @@ The current 3D model files are posted on Thingiverse.com, search for "Vorpal Hex
 
 SOURCING THE ELECTRONICS
 ------------------------
-
 You are welcome to source all the parts yourself, but we respectfully ask you to consider buying some or all of the parts from our store:
 http://store.vorpalrobotics.com
 
