@@ -38,27 +38,27 @@ const char *Version = "#GV2r1";  // this version adds SD card formatting when bo
 
 ///////////////////////// LICENSE FOR SDFAT LIBRARY BY BILL GREIMAN ////////////////////////////////////
 /**************************
-MIT License
+  MIT License
 
-Copyright (c) 2011..2017 Bill Greiman
+  Copyright (c) 2011..2017 Bill Greiman
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
 **********************/
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -67,17 +67,17 @@ SOFTWARE.
 int debugmode = 0;          // Set to 1 to get more debug messages. Warning: this may make Scratch unstable so don't leave it on.
 
 #define DEBUG_SD  0         // Set this to 1 if you want debugging info about the SD card and record/play functions.
-                            // This is very verbose and may affect scratch performance so only do it if you have to.
-                            // You will likely see things running slower than normal in scratch record/play mode for example.
-                            // It also takes up a lot of memory and you might get warnings from Arduino about too little
-                            // RAM being left. But it seems to work for me even with that warning.
+// This is very verbose and may affect scratch performance so only do it if you have to.
+// You will likely see things running slower than normal in scratch record/play mode for example.
+// It also takes up a lot of memory and you might get warnings from Arduino about too little
+// RAM being left. But it seems to work for me even with that warning.
 
 #define DEBUG_BUTTONS 0     // There is some manufacturer who is selling defective DPAD modules that look just like the
-                            // ones sold by Vorpal Robotics, and they have a different set of output values for each
-                            // button (and only use a small percentage of the range of values, which is why I consider
-                            // them to be defective). If you get one of those, set this define to 1 and you'll get debug info sent
-                            // to the serial monitor to help you figure out what values will work. After that you can
-                            // modify the values in the decode_button() function below to suite your DPAD button module.
+// ones sold by Vorpal Robotics, and they have a different set of output values for each
+// button (and only use a small percentage of the range of values, which is why I consider
+// them to be defective). If you get one of those, set this define to 1 and you'll get debug info sent
+// to the serial monitor to help you figure out what values will work. After that you can
+// modify the values in the decode_button() function below to suite your DPAD button module.
 
 #define USE_SDIO 0
 #include <SdFat.h>
@@ -138,10 +138,10 @@ SdFat SD;
 // and they correspond to dpad directions (weapon is the extra dpad button, stop is the lack of any button being pressed).
 
 
-SoftwareSerial BlueTooth(A5,A4);  // connect bluetooth module Tx=A5=Yellow wire Rx=A4=Green Wire
-                                  // although not intuitive, the analog ports function just fine as digital ports for this purpose
-                                  // and in order to keep the wiring simple for the 4x4 button matrix as well as the SPI lines needed
-                                  // for the SD card, it was necessary to use analog ports for the bluetooth module.
+SoftwareSerial BlueTooth(A5, A4); // connect bluetooth module Tx=A5=Yellow wire Rx=A4=Green Wire
+// although not intuitive, the analog ports function just fine as digital ports for this purpose
+// and in order to keep the wiring simple for the 4x4 button matrix as well as the SPI lines needed
+// for the SD card, it was necessary to use analog ports for the bluetooth module.
 
 
 
@@ -197,32 +197,32 @@ char CurSubCmd = SubmodeChars[0]; // default is primary submode
 char CurDpad = 's'; // default is stop
 unsigned int BeepFreq = 0;   // frequency of next beep command, 0 means no beep, should be range 50 to 2000 otherwise
 unsigned int BeepDur = 0;    // duration of next beep command, 0 means no beep, should be in range 1 to 30000 otherwise
-                             // although if you go too short, like less than 30, you'll hardly hear anything
+// although if you go too short, like less than 30, you'll hardly hear anything
 
 void println() {
   Serial.println("");
 }
 
 void debug(const char *s) {
-  if (verbose||suppressButtonsUntil >= millis()) {
+  if (verbose || suppressButtonsUntil >= millis()) {
     Serial.print(s);
   }
 }
 
 void debug(int s) {
-  if (verbose||suppressButtonsUntil >= millis()) {
+  if (verbose || suppressButtonsUntil >= millis()) {
     Serial.print(s);
   }
 }
 
 void debug(long s) {
-  if (verbose||suppressButtonsUntil >= millis()) {
+  if (verbose || suppressButtonsUntil >= millis()) {
     Serial.print(s);
   }
 }
 
 void debugln() {
-  if (verbose||suppressButtonsUntil >= millis()) {
+  if (verbose || suppressButtonsUntil >= millis()) {
     println();
   }
 }
@@ -245,28 +245,28 @@ int scanmatrix() {
 
   // first set all rows to high impedance mode
   for (int row = 0; row < MATRIX_NROW; row++) {
-    pinMode(MATRIX_ROW_START+row, INPUT);
+    pinMode(MATRIX_ROW_START + row, INPUT);
   }
   // set all columns to pullup inputs
   for (int col = 0; col < MATRIX_NCOL; col++) {
-    pinMode(MATRIX_COL_START+col, INPUT_PULLUP);
-  } 
+    pinMode(MATRIX_COL_START + col, INPUT_PULLUP);
+  }
 
   // read each row/column combo until we find one that is active
   for (int row = 0; row < MATRIX_NROW; row++) {
     // set only the row we're looking at output low
-    pinMode(MATRIX_ROW_START+row, OUTPUT);
-    digitalWrite(MATRIX_ROW_START+row, LOW);
-    
+    pinMode(MATRIX_ROW_START + row, OUTPUT);
+    digitalWrite(MATRIX_ROW_START + row, LOW);
+
     for (int col = 0; col < MATRIX_NCOL; col++) {
       delayMicroseconds(100);
-      if (digitalRead(MATRIX_COL_START+col) == LOW) {
+      if (digitalRead(MATRIX_COL_START + col) == LOW) {
         // we found the first pushed button
         if (row < 3) {
           CurCmd = ModeChars[row];
           CurSubCmd = SubmodeChars[col];
         }
-        int curmatrix = row*MATRIX_NROW+col;
+        int curmatrix = row * MATRIX_NROW + col;
         int clicktime = millis() - curMatrixStartTime;
         if (curmatrix != priorMatrix) {
           curMatrixStartTime = millis();
@@ -283,7 +283,7 @@ int scanmatrix() {
         return curmatrix;
       }
     }
-    pinMode(MATRIX_ROW_START+row, INPUT);  // set back to high impedance
+    pinMode(MATRIX_ROW_START + row, INPUT); // set back to high impedance
     //delay(1);
   }
 
@@ -306,25 +306,25 @@ char decode_button(int b) {
   Serial.print("DPAD: "); Serial.println(b);
 #endif
 
-// If your DPAD is doing the wrong things for each button, and you didn't
-// purchase it from Vorpal Robotics, LLC, then you may have a defective
-// DPAD module that outputs nonstandard values. Turn on DEPADDEBUG mode,
-// then use the serial monitor to find out what values your buttons are
-// returning. Modify the code below to return the correct values for each
-// button.
+  // If your DPAD is doing the wrong things for each button, and you didn't
+  // purchase it from Vorpal Robotics, LLC, then you may have a defective
+  // DPAD module that outputs nonstandard values. Turn on DEPADDEBUG mode,
+  // then use the serial monitor to find out what values your buttons are
+  // returning. Modify the code below to return the correct values for each
+  // button.
 
-  if (b < 100) {
-     return 'b';  // backward (bottom button)
-  } else if (b < 200) {
-     return 'l';  // left 
-  } else if (b < 400) {
+  if (b == 0) {
+    return 'b';  // backward (bottom button)
+  } else if (b < 40) {
+    return 'l';  // left
+  } else if (b < 90) {
     return 'r';   // right
-  } else if (b < 600) {
+  } else if (b < 200) {
     return 'f';  // forward (top of diamond)
-  } else if (b < 850) {
+  } else if (b < 400) {
     return 'w';  // weapon (very top button) In the documentation this button is called "Special"
-                 // but a long time ago we called it "weapon" because it was used in some other
-                 // robot projects that were fighting robots. The code still uses "w" since "s" means stop.
+    // but a long time ago we called it "weapon" because it was used in some other
+    // robot projects that were fighting robots. The code still uses "w" since "s" means stop.
   } else {
     return 's';  // stop (no button is pressed)
   }
@@ -375,7 +375,7 @@ char decode_button(int b) {
 
 int GRecState = GREC_STOPPED;  // gamepad recording state
 int SRecState = SREC_STOPPED; // scratch recording state
-unsigned long GRecNextEventTime = 0; // next time to record or play a gamepad record/play event 
+unsigned long GRecNextEventTime = 0; // next time to record or play a gamepad record/play event
 unsigned long SRecNextEventTime = 0; // next time to play a scratch recording event
 
 unsigned long NextTransmitTime = 0;  // next time to send a command to the robot
@@ -385,7 +385,7 @@ void setBeep(int f, int d) {
   // schedule a beep to go out with the next transmission
   // this is not quite right as there can only be one beep per transmission
   // right now so if two different subsystems wanted to beep at the same time
-  // whichever one is scheduled last would win. 
+  // whichever one is scheduled last would win.
   // But because 10 transmits go out per second this seems sufficient, and it's simple
   BeepFreq = f;
   BeepDur = d;
@@ -401,7 +401,7 @@ void setBeep(int f, int d) {
 ///  combined many of the functions, reduced the number of output strings, and done lots of other work
 ///  to make it fit. This code only supports formatting cards up to 2 GB because it always uses FAT16 format.
 ///  The SD card in the gamepad will be formatted (using the functions in this section)
-///  if you hold down R4 on the gamepad while booting. The format only takes a few seconds on 
+///  if you hold down R4 on the gamepad while booting. The format only takes a few seconds on
 ///  small cards (256 mb or less). It's always a full format with zero initialization. This can be used
 ///  to recover cards that have gotten corrupted (usually by turning off the gamepad while recording),
 ///  and it can convert small cards from FAT12 to FAT16.  The SDFat library (as well as the SD library that
@@ -478,7 +478,7 @@ void clearFatDir(Sd2Card *card, cache_t *cache, uint32_t bgn, uint32_t count) {
 //------------------------------------------------------------------------------
 void SDCardFormat() {
   Sd2Card card;
- 
+
   uint32_t cardSizeBlocks;
   uint32_t cardCapacityMB;
 
@@ -497,7 +497,7 @@ void SDCardFormat() {
   uint32_t fatStart;
   uint32_t fatSize;
   uint32_t dataStart;
-  
+
   // constants for file system structure
 #define BU16 128
 
@@ -510,181 +510,181 @@ void SDCardFormat() {
     sdError("3");
     return;  // something's wrong, don't format
   }
-  cardCapacityMB = (cardSizeBlocks + 2047)/2048;
+  cardCapacityMB = (cardSizeBlocks + 2047) / 2048;
 
   Serial.print("#SD"); Serial.println(cardCapacityMB);  // output the number of megabytes for the detected card
 
-    ////////////////////////////////////
-    // flash erase all data
-    ////////////////////////////////////
- {
+  ////////////////////////////////////
+  // flash erase all data
+  ////////////////////////////////////
+  {
 #define ERASE_SIZE 262144L
-  uint32_t firstBlock = 0;
-  uint32_t lastBlock;
-  //uint16_t n = 0;
+    uint32_t firstBlock = 0;
+    uint32_t lastBlock;
+    //uint16_t n = 0;
 
-  do {
-    lastBlock = firstBlock + ERASE_SIZE - 1;
-    if (lastBlock >= cardSizeBlocks) {
-      lastBlock = cardSizeBlocks - 1;
-    }
-    if (!card.erase(firstBlock, lastBlock)) {
-      sdError("4");
-    }
-    firstBlock += ERASE_SIZE;
-  } while (firstBlock < cardSizeBlocks);
+    do {
+      lastBlock = firstBlock + ERASE_SIZE - 1;
+      if (lastBlock >= cardSizeBlocks) {
+        lastBlock = cardSizeBlocks - 1;
+      }
+      if (!card.erase(firstBlock, lastBlock)) {
+        sdError("4");
+      }
+      firstBlock += ERASE_SIZE;
+    } while (firstBlock < cardSizeBlocks);
 
-  if (!card.readBlock(0, cache.data)) {
-    sdError("5");
-  }
+    if (!card.readBlock(0, cache.data)) {
+      sdError("5");
+    }
     ///////////////////////////////////////
     //////////// initsizes ////////////////
-  if (cardCapacityMB <= 6) {
-    sdError("6");  //Card is too small.
-    return;   // can't format it
-  } else if (cardCapacityMB <= 16) {
-    sectorsPerCluster = 2;
-  } else if (cardCapacityMB <= 32) {
-    sectorsPerCluster = 4;
-  } else if (cardCapacityMB <= 64) {
-    sectorsPerCluster = 8;
-  } else if (cardCapacityMB <= 128) {
-    sectorsPerCluster = 16;
-  } else if (cardCapacityMB <= 1024) {
-    sectorsPerCluster = 32;
-  } else if (cardCapacityMB <= 2048) {
-    sectorsPerCluster = 64;
-  } else {
-    // too big to format as Fat16
-    sdError("#BIG");
-    return;
-  }
-
-  // set fake disk geometry
-  sectorsPerTrack = cardCapacityMB <= 256 ? 32 : 63;
-
-  if (cardCapacityMB <= 16) {
-    numberOfHeads = 2;
-  } else if (cardCapacityMB <= 32) {
-    numberOfHeads = 4;
-  } else if (cardCapacityMB <= 128) {
-    numberOfHeads = 8;
-  } else if (cardCapacityMB <= 504) {
-    numberOfHeads = 16;
-  } else if (cardCapacityMB <= 1008) {
-    numberOfHeads = 32;
-  } else if (cardCapacityMB <= 2016) {
-    numberOfHeads = 64;
-  } else if (cardCapacityMB <= 2048) {
-    numberOfHeads = 128;
-  } else {
-    return;
-  }
- }
-    ///////////////////////////////////////
-    ///////////makefat16
-    //////////////////////////////////////
- {
-  uint32_t nc;
-  for (dataStart = 2 * BU16;; dataStart += BU16) {
-    nc = (cardSizeBlocks - dataStart)/sectorsPerCluster;
-    fatSize = (nc + 2 + 255)/256;
-    uint32_t r = BU16 + 1 + 2 * fatSize + 32;
-    if (dataStart < r) {
-      continue;
+    if (cardCapacityMB <= 6) {
+      sdError("6");  //Card is too small.
+      return;   // can't format it
+    } else if (cardCapacityMB <= 16) {
+      sectorsPerCluster = 2;
+    } else if (cardCapacityMB <= 32) {
+      sectorsPerCluster = 4;
+    } else if (cardCapacityMB <= 64) {
+      sectorsPerCluster = 8;
+    } else if (cardCapacityMB <= 128) {
+      sectorsPerCluster = 16;
+    } else if (cardCapacityMB <= 1024) {
+      sectorsPerCluster = 32;
+    } else if (cardCapacityMB <= 2048) {
+      sectorsPerCluster = 64;
+    } else {
+      // too big to format as Fat16
+      sdError("#BIG");
+      return;
     }
-    relSector = dataStart - r + BU16;
-    break;
+
+    // set fake disk geometry
+    sectorsPerTrack = cardCapacityMB <= 256 ? 32 : 63;
+
+    if (cardCapacityMB <= 16) {
+      numberOfHeads = 2;
+    } else if (cardCapacityMB <= 32) {
+      numberOfHeads = 4;
+    } else if (cardCapacityMB <= 128) {
+      numberOfHeads = 8;
+    } else if (cardCapacityMB <= 504) {
+      numberOfHeads = 16;
+    } else if (cardCapacityMB <= 1008) {
+      numberOfHeads = 32;
+    } else if (cardCapacityMB <= 2016) {
+      numberOfHeads = 64;
+    } else if (cardCapacityMB <= 2048) {
+      numberOfHeads = 128;
+    } else {
+      return;
+    }
   }
-  // check valid cluster count for FAT16 volume
-  if (nc < 4085 || nc >= 65525) {
-    sdError("8"); // bad cluster count
-    return;
+  ///////////////////////////////////////
+  ///////////makefat16
+  //////////////////////////////////////
+  {
+    uint32_t nc;
+    for (dataStart = 2 * BU16;; dataStart += BU16) {
+      nc = (cardSizeBlocks - dataStart) / sectorsPerCluster;
+      fatSize = (nc + 2 + 255) / 256;
+      uint32_t r = BU16 + 1 + 2 * fatSize + 32;
+      if (dataStart < r) {
+        continue;
+      }
+      relSector = dataStart - r + BU16;
+      break;
+    }
+    // check valid cluster count for FAT16 volume
+    if (nc < 4085 || nc >= 65525) {
+      sdError("8"); // bad cluster count
+      return;
+    }
+    reservedSectors = 1;
+    fatStart = relSector + reservedSectors;
+    partSize = nc * sectorsPerCluster + 2 * fatSize + reservedSectors + 32;
+    if (partSize < 32680) {
+      partType = 0X01;
+    } else if (partSize < 65536) {
+      partType = 0X04;
+    } else {
+      partType = 0X06;
+    }
+    ////////////////////////////// write MBR ////////////////////////////////
+    clearCache(&cache, true);
+    part_t* p = cache.mbr.part;
+    p->boot = 0;
+    uint16_t c = lbnToCylinder(relSector);
+    if (c > 1023) {
+      sdError("9");
+    }
+    p->beginCylinderHigh = c >> 8;
+    p->beginCylinderLow = c & 0XFF;
+    p->beginHead = lbnToHead(relSector);
+    p->beginSector = lbnToSector(relSector);
+    p->type = partType;
+    uint32_t endLbn = relSector + partSize - 1;
+    c = lbnToCylinder(endLbn);
+    if (c <= 1023) {
+      p->endCylinderHigh = c >> 8;
+      p->endCylinderLow = c & 0XFF;
+      p->endHead = lbnToHead(endLbn);
+      p->endSector = lbnToSector(endLbn);
+    } else {
+      // Too big flag, c = 1023, h = 254, s = 63
+      p->endCylinderHigh = 3;
+      p->endCylinderLow = 255;
+      p->endHead = 254;
+      p->endSector = 63;
+    }
+    p->firstSector = relSector;
+    p->totalSectors = partSize;
+    if (!writeCache(&card, &cache, 0)) {
+      sdError("10");  // can't write cache
+    }
+    ///////////////////////
+    clearCache(&cache, true);
+    fat_boot_t* pb = &cache.fbs;
+    pb->jump[0] = 0XEB;
+    pb->jump[1] = 0X00;
+    pb->jump[2] = 0X90;
+    for (uint8_t i = 0; i < sizeof(pb->oemId); i++) {
+      pb->oemId[i] = ' ';
+    }
+    pb->bytesPerSector = 512;
+    pb->sectorsPerCluster = sectorsPerCluster;
+    pb->reservedSectorCount = reservedSectors;
+    pb->fatCount = 2;
+    pb->rootDirEntryCount = 512;
+    pb->mediaType = 0XF8;
+    pb->sectorsPerFat16 = fatSize;
+    pb->sectorsPerTrack = sectorsPerTrack;
+    pb->headCount = numberOfHeads;
+    pb->hidddenSectors = relSector;
+    pb->totalSectors32 = partSize;
+    pb->driveNumber = 0X80;
+    pb->bootSignature = EXTENDED_BOOT_SIG;
+    pb->volumeSerialNumber = (cardSizeBlocks << 8) + micros();
+    memcpy(pb->volumeLabel, noName, sizeof(pb->volumeLabel));
+    memcpy(pb->fileSystemType, fat16str, sizeof(pb->fileSystemType));
+    // write partition boot sector
+    if (!writeCache(&card, &cache, relSector)) {
+      sdError("11"); //pbf failed
+    }
+    // clear FAT and root directory
+    clearFatDir(&card, &cache, fatStart, dataStart - fatStart);
+    clearCache(&cache, false);
+    cache.fat16[0] = 0XFFF8;
+    cache.fat16[1] = 0XFFFF;
+    // write first block of FAT and backup for reserved clusters
+    if (!writeCache(&card, &cache, fatStart)
+        || !writeCache(&card, &cache, fatStart + fatSize)) {
+      sdError("12"); //Fat16 reserve failed
+    }
   }
-  reservedSectors = 1;
-  fatStart = relSector + reservedSectors;
-  partSize = nc * sectorsPerCluster + 2 * fatSize + reservedSectors + 32;
-  if (partSize < 32680) {
-    partType = 0X01;
-  } else if (partSize < 65536) {
-    partType = 0X04;
-  } else {
-    partType = 0X06;
-  }
-  ////////////////////////////// write MBR ////////////////////////////////
-  clearCache(&cache, true);
-  part_t* p = cache.mbr.part;
-  p->boot = 0;
-  uint16_t c = lbnToCylinder(relSector);
-  if (c > 1023) {
-    sdError("9");
-  }
-  p->beginCylinderHigh = c >> 8;
-  p->beginCylinderLow = c & 0XFF;
-  p->beginHead = lbnToHead(relSector);
-  p->beginSector = lbnToSector(relSector);
-  p->type = partType;
-  uint32_t endLbn = relSector + partSize - 1;
-  c = lbnToCylinder(endLbn);
-  if (c <= 1023) {
-    p->endCylinderHigh = c >> 8;
-    p->endCylinderLow = c & 0XFF;
-    p->endHead = lbnToHead(endLbn);
-    p->endSector = lbnToSector(endLbn);
-  } else {
-    // Too big flag, c = 1023, h = 254, s = 63
-    p->endCylinderHigh = 3;
-    p->endCylinderLow = 255;
-    p->endHead = 254;
-    p->endSector = 63;
-  }
-  p->firstSector = relSector;
-  p->totalSectors = partSize;
-  if (!writeCache(&card, &cache, 0)) {
-    sdError("10");  // can't write cache
-  }
-///////////////////////
-  clearCache(&cache,true);
-  fat_boot_t* pb = &cache.fbs;
-  pb->jump[0] = 0XEB;
-  pb->jump[1] = 0X00;
-  pb->jump[2] = 0X90;
-  for (uint8_t i = 0; i < sizeof(pb->oemId); i++) {
-    pb->oemId[i] = ' ';
-  }
-  pb->bytesPerSector = 512;
-  pb->sectorsPerCluster = sectorsPerCluster;
-  pb->reservedSectorCount = reservedSectors;
-  pb->fatCount = 2;
-  pb->rootDirEntryCount = 512;
-  pb->mediaType = 0XF8;
-  pb->sectorsPerFat16 = fatSize;
-  pb->sectorsPerTrack = sectorsPerTrack;
-  pb->headCount = numberOfHeads;
-  pb->hidddenSectors = relSector;
-  pb->totalSectors32 = partSize;
-  pb->driveNumber = 0X80;
-  pb->bootSignature = EXTENDED_BOOT_SIG;
-  pb->volumeSerialNumber = (cardSizeBlocks << 8) + micros();
-  memcpy(pb->volumeLabel, noName, sizeof(pb->volumeLabel));
-  memcpy(pb->fileSystemType, fat16str, sizeof(pb->fileSystemType));
-  // write partition boot sector
-  if (!writeCache(&card, &cache, relSector)) {
-    sdError("11"); //pbf failed
-  }
-  // clear FAT and root directory
-  clearFatDir(&card, &cache, fatStart, dataStart - fatStart);
-  clearCache(&cache, false);
-  cache.fat16[0] = 0XFFF8;
-  cache.fat16[1] = 0XFFFF;
-  // write first block of FAT and backup for reserved clusters
-  if (!writeCache(&card, &cache, fatStart)
-      || !writeCache(&card, &cache, fatStart + fatSize)) {
-    sdError("12"); //Fat16 reserve failed
-  }
- }
- card.spiStop();
- Serial.println("#FMTOK");
+  card.spiStop();
+  Serial.println("#FMTOK");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -705,7 +705,7 @@ int openScratchRecordFile(char cmd, char subcmd, char dpad) {
   SDScratchRecordFileName[1] = subcmd;
   SDScratchRecordFileName[2] = dpad;
   SDScratchRecordFileName[3] = '\0';
- 
+
   SDScratchRecordFile = SD.open(SDScratchRecordFileName, FILE_WRITE);
   if (SDScratchRecordFile) {
     SDScratchRecordFile.seek(0);
@@ -745,7 +745,7 @@ void removeAllRecordFiles() {
   // potential filenames) and takes a lot less codespace, which is at a premium on a nano
 
 #if DEBUG_SD
-  Serial.print("#DS");Serial.println(millis());
+  Serial.print("#DS"); Serial.println(millis());
 #endif
   char fname[4];
   char mode[] = "WDF";
@@ -759,7 +759,7 @@ void removeAllRecordFiles() {
         fname[1] = num[j];
         fname[2] = dpad[k];
         SD.remove(fname);
-      }    
+      }
     }
   }
 #if DEBUG_SD
@@ -770,114 +770,114 @@ void removeAllRecordFiles() {
 int sendbeep(int noheader) {
 
 #if DEBUG_SD
-      if (BeepFreq != 0) {
-        Serial.print("#BTBEEP="); Serial.print("B+"); Serial.print(BeepFreq); Serial.print("+"); Serial.println(BeepDur);
-      }
+  if (BeepFreq != 0) {
+    Serial.print("#BTBEEP="); Serial.print("B+"); Serial.print(BeepFreq); Serial.print("+"); Serial.println(BeepDur);
+  }
 #endif
 
-    unsigned int beepfreqhigh = highByte(BeepFreq);
-    unsigned int beepfreqlow = lowByte(BeepFreq);
-    if (!noheader) {
-      BlueTooth.print("B");
-    }
-    BlueTooth.write(beepfreqhigh);
-    BlueTooth.write(beepfreqlow);
+  unsigned int beepfreqhigh = highByte(BeepFreq);
+  unsigned int beepfreqlow = lowByte(BeepFreq);
+  if (!noheader) {
+    BlueTooth.print("B");
+  }
+  BlueTooth.write(beepfreqhigh);
+  BlueTooth.write(beepfreqlow);
 
-    unsigned int beepdurhigh = highByte(BeepDur);
-    unsigned int beepdurlow = lowByte(BeepDur);
-    BlueTooth.write(beepdurhigh);
-    BlueTooth.write(beepdurlow);
+  unsigned int beepdurhigh = highByte(BeepDur);
+  unsigned int beepdurlow = lowByte(BeepDur);
+  BlueTooth.write(beepdurhigh);
+  BlueTooth.write(beepdurlow);
 
-    // return checksum info
-    if (noheader) {
-      return beepfreqhigh+beepfreqlow+beepdurhigh+beepdurlow;
-    } else {
-      return 'B'+beepfreqhigh+beepfreqlow+beepdurhigh+beepdurlow;
-    }
+  // return checksum info
+  if (noheader) {
+    return beepfreqhigh + beepfreqlow + beepdurhigh + beepdurlow;
+  } else {
+    return 'B' + beepfreqhigh + beepfreqlow + beepdurhigh + beepdurlow;
+  }
 
 }
 
 void SendNextRecordedFrame(File *file, char *filename, int loop) {
-        int length = file->read(); // first byte is the number of bytes in the frame to send
-        
-#if DEBUG_SD
-        Serial.print("#L"); Serial.print(length); Serial.print(" avail:"); Serial.println(file->available());
-#endif
-        if (length <= 0 || file->available() < length+1) { // we are at the end of the file
-          if (loop) {
-            // rewind to start of file and just keep going in this state to loop
-            file->seek(0);
-            length = file->read();
-            if (file->available() < length+1) { // something's wrong, the file is damaged, return
-              return;
-            }
-            Serial.println("#LOOP");
-          } else { // not looping, stop playing
-            if (GRecState == GREC_PLAYING) {
-              GRecState = GREC_STOPPED;
-              SDGamepadRecordFile.close();
-#if DEBUG_SD
-  Serial.println("SDCL1");
-#endif
-            }
-            if (SRecState == SREC_PLAYING) {
-              SRecState = SREC_STOPPED;
-              SDScratchRecordFile.close();
-            }
-            file->close(); // it's ok to close the file twice
-#if DEBUG_SD
-  Serial.println("SDCL1b");
-#endif
-            return;
-          }
-        }
-        // if we get here, there is a full frame to send to the robot
-
-        // one complication: if we're playing a scratch recording off a long click button, and also
-        // we're in gamepad record mode, then we need to save the current scratch playing records to the gamepad record file
-        if (SRecState == SREC_PLAYING && GRecState == GREC_RECORDING) {
-          // in this case we know the file we're reading from must be a scratch recording that's now playing
-          // so write its length into the gamepad recording file.
-          //SDGamepadRecordFile.write(length);
-#if DEBUG_SD
-          //Serial.print("#SC>GR L="); Serial.println(length);
-#endif
-        }
-        BlueTooth.print("V1");
-        BlueTooth.write(length+5);  // include 5 more bytes for beep
-#if DEBUG_SD
-        Serial.print("#V1 L="); Serial.println(length+5);
-#endif
-        {
-            int checksum = length+5;  // the length byte is included in the checksum
-            for (int i = 0; i < length && file->available()>0; i++) {
-              int c = file->read();
-              checksum += c;
-              BlueTooth.write(c);
-              if (SRecState == SREC_PLAYING && GRecState == GREC_RECORDING) {
-                // in this case we know the file we're reading from must be a scratch recording that's now playing
-                // and we're also recording using the gamepad record feature, so we need to write this byte into the gamepad
-                // recording file
-                //SDGamepadRecordFile.write(c);  DISABLED DUE TO TECHNICAL ISSUES
-#if DEBUG_SD
-                Serial.print("#SC>GR@");  Serial.print(SDScratchRecordFile.position()); Serial.print(":"); Serial.println(SDGamepadRecordFile.position()); // scratch data written to gamepad recording file
-#endif
-              }
-#if DEBUG_SD
-              Serial.print("#"); Serial.write(c); Serial.print("("); Serial.print(c); Serial.println(")");
-#endif
-            }
-            checksum += sendbeep(0);
-            setBeep(0,0); // clear the beep since we've already sent it out
-            checksum = (checksum % 256);
-            BlueTooth.write(checksum);
-#if DEBUG_SD
-            Serial.print("#CS"); Serial.println(checksum);
-#endif
-        }
+  int length = file->read(); // first byte is the number of bytes in the frame to send
 
 #if DEBUG_SD
-        Serial.print("#P:"); Serial.print(filename); Serial.println(file->position());
+  Serial.print("#L"); Serial.print(length); Serial.print(" avail:"); Serial.println(file->available());
+#endif
+  if (length <= 0 || file->available() < length + 1) { // we are at the end of the file
+    if (loop) {
+      // rewind to start of file and just keep going in this state to loop
+      file->seek(0);
+      length = file->read();
+      if (file->available() < length + 1) { // something's wrong, the file is damaged, return
+        return;
+      }
+      Serial.println("#LOOP");
+    } else { // not looping, stop playing
+      if (GRecState == GREC_PLAYING) {
+        GRecState = GREC_STOPPED;
+        SDGamepadRecordFile.close();
+#if DEBUG_SD
+        Serial.println("SDCL1");
+#endif
+      }
+      if (SRecState == SREC_PLAYING) {
+        SRecState = SREC_STOPPED;
+        SDScratchRecordFile.close();
+      }
+      file->close(); // it's ok to close the file twice
+#if DEBUG_SD
+      Serial.println("SDCL1b");
+#endif
+      return;
+    }
+  }
+  // if we get here, there is a full frame to send to the robot
+
+  // one complication: if we're playing a scratch recording off a long click button, and also
+  // we're in gamepad record mode, then we need to save the current scratch playing records to the gamepad record file
+  if (SRecState == SREC_PLAYING && GRecState == GREC_RECORDING) {
+    // in this case we know the file we're reading from must be a scratch recording that's now playing
+    // so write its length into the gamepad recording file.
+    //SDGamepadRecordFile.write(length);
+#if DEBUG_SD
+    //Serial.print("#SC>GR L="); Serial.println(length);
+#endif
+  }
+  BlueTooth.print("V1");
+  BlueTooth.write(length + 5); // include 5 more bytes for beep
+#if DEBUG_SD
+  Serial.print("#V1 L="); Serial.println(length + 5);
+#endif
+  {
+    int checksum = length + 5; // the length byte is included in the checksum
+    for (int i = 0; i < length && file->available() > 0; i++) {
+      int c = file->read();
+      checksum += c;
+      BlueTooth.write(c);
+      if (SRecState == SREC_PLAYING && GRecState == GREC_RECORDING) {
+        // in this case we know the file we're reading from must be a scratch recording that's now playing
+        // and we're also recording using the gamepad record feature, so we need to write this byte into the gamepad
+        // recording file
+        //SDGamepadRecordFile.write(c);  DISABLED DUE TO TECHNICAL ISSUES
+#if DEBUG_SD
+        Serial.print("#SC>GR@");  Serial.print(SDScratchRecordFile.position()); Serial.print(":"); Serial.println(SDGamepadRecordFile.position()); // scratch data written to gamepad recording file
+#endif
+      }
+#if DEBUG_SD
+      Serial.print("#"); Serial.write(c); Serial.print("("); Serial.print(c); Serial.println(")");
+#endif
+    }
+    checksum += sendbeep(0);
+    setBeep(0, 0); // clear the beep since we've already sent it out
+    checksum = (checksum % 256);
+    BlueTooth.write(checksum);
+#if DEBUG_SD
+    Serial.print("#CS"); Serial.println(checksum);
+#endif
+  }
+
+#if DEBUG_SD
+  Serial.print("#P:"); Serial.print(filename); Serial.println(file->position());
 #endif
 }
 
@@ -891,32 +891,32 @@ void RecordPlayHandler() {
 #if DEBUG_SD
     Serial.println("#SCRPL");
 #endif
-     if (!SDScratchRecordFile) {
+    if (!SDScratchRecordFile) {
       // something is wrong, the file is not open
       Serial.print("#E:"); Serial.println(SDScratchRecordFileName); // "Scratch Play Error"
       SRecState = SREC_STOPPED;
       return;
-     }
+    }
 
-     if (millis() > NextTransmitTime) {
-          NextTransmitTime = millis() + REC_FRAMEMILLIS;
-          SendNextRecordedFrame(&SDScratchRecordFile, SDScratchRecordFileName, 1); // always loop scratch recordings
-     }
+    if (millis() > NextTransmitTime) {
+      NextTransmitTime = millis() + REC_FRAMEMILLIS;
+      SendNextRecordedFrame(&SDScratchRecordFile, SDScratchRecordFileName, 1); // always loop scratch recordings
+    }
 
-     return;  // in this case we don't need to continue with the rest of the code because we've taken care of both
-              // scratch playing and gamepad recording from a scratch playback
+    return;  // in this case we don't need to continue with the rest of the code because we've taken care of both
+    // scratch playing and gamepad recording from a scratch playback
   }
 
   // If we get here, then Scratch was not recording or playing anything
   // The code below handles the gamepad manual recording functions triggered from the "R" line of buttons
-  
+
   switch (GRecState) {
     case GREC_STOPPED:
       // make sure file is closed and flushed
       SDGamepadRecordFile.close();  // it's ok to call this even if its already closed, I checked the SD card code
       break;
-      
-    /////////////////////////////////////////////////////////////  
+
+    /////////////////////////////////////////////////////////////
     case GREC_PAUSED:
       // nothing to do!
 #if DEBUG_SD
@@ -934,11 +934,11 @@ void RecordPlayHandler() {
         }
         // chirp once every second to remind user they are playing a recording
         long t = millis();
-        if ((t-LastRecChirp) >= 1000) {
-           setBeep(BF_RECORD_CHIRP, BD_CHIRP);
-           LastRecChirp = t;
+        if ((t - LastRecChirp) >= 1000) {
+          setBeep(BF_RECORD_CHIRP, BD_CHIRP);
+          LastRecChirp = t;
         }
-        
+
         if (millis() < GRecNextEventTime) {
           // it's not time to send the next record yet
           return;
@@ -947,23 +947,23 @@ void RecordPlayHandler() {
         // If we get here, it's time to transmit the next record over bluetooth
         GRecNextEventTime = millis() + REC_FRAMEMILLIS;
 #if DEBUG_SD
-        Serial.print("#P:"); Serial.print(SDGamepadRecordFileName);Serial.print("@");Serial.print(SDGamepadRecordFile.position()); println();
+        Serial.print("#P:"); Serial.print(SDGamepadRecordFileName); Serial.print("@"); Serial.print(SDGamepadRecordFile.position()); println();
 #endif
         SendNextRecordedFrame(&SDGamepadRecordFile, (char *)SDGamepadRecordFileName, PlayLoopMode);
-    } 
+      }
       break;
 
     /////////////////////////////////////////////////////////
     case GREC_RECORDING:
       if (!SDGamepadRecordFile) {
-          // something is hideously wrong
-          GRecState = GREC_STOPPED;
-          return;
+        // something is hideously wrong
+        GRecState = GREC_STOPPED;
+        return;
       }
       // chirp once every second to remind user they are recording
-      if ((millis()-LastRecChirp) >= 1000) {
-         setBeep(BF_RECORD_CHIRP, BD_CHIRP);
-         LastRecChirp = millis();
+      if ((millis() - LastRecChirp) >= 1000) {
+        setBeep(BF_RECORD_CHIRP, BD_CHIRP);
+        LastRecChirp = millis();
       }
 
       if (millis() < GRecNextEventTime) {
@@ -985,7 +985,7 @@ void RecordPlayHandler() {
 #if  DEBUG_SD
       Serial.print("#L="); Serial.println(SDGamepadRecordFile.size());
 #endif
-      
+
       break;
 
     ////////////////////////////////////////////////////////////
@@ -993,10 +993,10 @@ void RecordPlayHandler() {
       GRecNextEventTime = 0;
       GRecState = GREC_STOPPED;
       SDGamepadRecordFile.flush();  // it's safe to do all these operations without checking if the file is open
-      SDGamepadRecordFile.seek(0); 
+      SDGamepadRecordFile.seek(0);
 #if DEBUG_SD
-  Serial.println("SDrw0");
-#endif      
+      Serial.println("SDrw0");
+#endif
 
 #if DEBUG_SD
       Serial.println("#RW");
@@ -1012,7 +1012,7 @@ void RecordPlayHandler() {
 }
 
 void setup() {
-    Serial.begin(9600);
+  Serial.begin(38400);
   // see if we're supposed to be in trim mode or card format mode
   int mat = scanmatrix();
   if (mat == WALK_1) {
@@ -1044,7 +1044,7 @@ void setup() {
   digitalWrite(VCCA1, HIGH);
   pinMode(SDCHIPSELECT, OUTPUT);
   digitalWrite(SDCHIPSELECT, HIGH); // chip select for SD card
-  
+
   if (!SD.begin(SDCHIPSELECT)) {
     Serial.println("#SDBF");    // SD Begin Failed
     return;
@@ -1054,10 +1054,10 @@ void setup() {
 int priormatrix = -1;
 long curmatrixstarttime = 0;  // used to detect long tap for play button and erase button
 
-  // Scratch integration: If anything appears on the serial input,
-  // it's probably coming from a scratch program, so simply send it
-  // out to the robot, unless it appears to be a command to start
-  // recording onto a gamepad button
+// Scratch integration: If anything appears on the serial input,
+// it's probably coming from a scratch program, so simply send it
+// out to the robot, unless it appears to be a command to start
+// recording onto a gamepad button
 
 // The following are states for the scratch state machine
 
@@ -1069,17 +1069,17 @@ long curmatrixstarttime = 0;  // used to detect long tap for play button and era
 #define SCR_REC_COMMAND         5
 
 #define SCR_MAX_COMMAND_LENGTH  80    // we never expect scratch to send more than 16 commands at a time and max command len is 5 bytes.
-                                      // 16 commands is enough to send a move individually to every servo, plus a beep, plus a sensor
-                                      // request, plus a couple more besides that. At 80 bytes the packet would require about 20 millisec
-                                      // to send over bluetooth, which allows plenty of time for the hexapod to send back the sensor
-                                      // data before the next transmission. Although the bluetooth hardware is full duplex, the
-                                      // softwareserial library currently is not, so we can't be both reading and writing the bluetooth
-                                      // module at the same time.
+// 16 commands is enough to send a move individually to every servo, plus a beep, plus a sensor
+// request, plus a couple more besides that. At 80 bytes the packet would require about 20 millisec
+// to send over bluetooth, which allows plenty of time for the hexapod to send back the sensor
+// data before the next transmission. Although the bluetooth hardware is full duplex, the
+// softwareserial library currently is not, so we can't be both reading and writing the bluetooth
+// module at the same time.
 
 // this little function prints out info to help debug state machine errors
 void scratcherror(const char *state, char c) {
-    Serial.print("#SER:"); Serial.print(state); Serial.print(":"); 
-    Serial.print(c); Serial.print("("); Serial.write(c); Serial.println(")");
+  Serial.print("#SER:"); Serial.print(state); Serial.print(":");
+  Serial.print(c); Serial.print("("); Serial.write(c); Serial.println(")");
 }
 
 int ScratchState = SCR_WAITING_FOR_HEADER;
@@ -1090,12 +1090,12 @@ char ScratchSDFileName[3]; // the name of a scratch recording file which is a ma
 int handleSerialInput() {
 
   int dataread = 0;
-  
-  while (Serial.available()>0) {
+
+  while (Serial.available() > 0) {
     int c = Serial.read();
     //Serial.print("C="); Serial.write(c); Serial.print("/"); Serial.print(c); println();
     dataread++;
-    
+
     switch (ScratchState) {
       case SCR_WAITING_FOR_HEADER:
         if (c == 'V') {  // a command to be sent directly to the robot
@@ -1125,46 +1125,46 @@ int handleSerialInput() {
         } else {  // state should be SCR_WAITING_FOR_REC_1 here
           ScratchState = SCR_REC_COMMAND;
           ScratchXmitBytes = 0;   // we expect 3 more bytes to tell us what button to record to
-                                  // this will either be a command spec like: W1f or F2s, or it
-                                  // will be special: SSS means stop recording, or DDD means delete all recordings
+          // this will either be a command spec like: W1f or F2s, or it
+          // will be special: SSS means stop recording, or DDD means delete all recordings
 #if DEBUG_SD
           Serial.println("#TX");  // "Scratch Record Waiting for Transmit bytes"
 #endif
         }
         break;
       case SCR_WAITING_FOR_LENGTH:
-          // This is a hexapod command not a REC command
-          ScratchXmitBytes = 0;  // how many have we gotten
-          ScratchLength = c;    // how many do we expect
-          if (ScratchLength > SCR_MAX_COMMAND_LENGTH) {
-            // command is longer than ever expected from scratch so something is wrong
-            ScratchState = SCR_WAITING_FOR_HEADER;  // punt back to waiting for a new record
-            Serial.print("#E3"); Serial.println(c);  // exceeded max len error message
-          } else {
-            BlueTooth.print("V1");  // version 1 header
-            BlueTooth.write(c);     // length of packet
-            if (SRecState == SREC_RECORDING) {
-              // we're also recording to a gamepad button so save the length byte
-              SDScratchRecordFile.write(c);  // if this file is not open this won't crash anything, I checked the SD card library code
-            }
-            ScratchState = SCR_HEX_TRANSFER;
+        // This is a hexapod command not a REC command
+        ScratchXmitBytes = 0;  // how many have we gotten
+        ScratchLength = c;    // how many do we expect
+        if (ScratchLength > SCR_MAX_COMMAND_LENGTH) {
+          // command is longer than ever expected from scratch so something is wrong
+          ScratchState = SCR_WAITING_FOR_HEADER;  // punt back to waiting for a new record
+          Serial.print("#E3"); Serial.println(c);  // exceeded max len error message
+        } else {
+          BlueTooth.print("V1");  // version 1 header
+          BlueTooth.write(c);     // length of packet
+          if (SRecState == SREC_RECORDING) {
+            // we're also recording to a gamepad button so save the length byte
+            SDScratchRecordFile.write(c);  // if this file is not open this won't crash anything, I checked the SD card library code
           }
-          break;
+          ScratchState = SCR_HEX_TRANSFER;
+        }
+        break;
       case SCR_HEX_TRANSFER:
-          ScratchXmitBytes++;
-          BlueTooth.write(c);  // the next byte in the transmission
-          if (SRecState == SREC_RECORDING && ScratchXmitBytes <= ScratchLength) {
-            // In this case we are also in scratch record mode so save the data to the recording file.
-            // We use <= ScratchLength in the above condition because we don't want to put the 
-            // checksum byte on there because that's not normally stored in
-            // recording files (similar to the way the V1 header is not stored). The SD card is a reliable device
-            // so we don't waste space and writing time by storing the checksum or headers
-            SDScratchRecordFile.write(c);
-          }
-          if (ScratchXmitBytes > ScratchLength) {
-              // everything got sent, including the checksum byte
-              ScratchState = SCR_WAITING_FOR_HEADER;
-          }
+        ScratchXmitBytes++;
+        BlueTooth.write(c);  // the next byte in the transmission
+        if (SRecState == SREC_RECORDING && ScratchXmitBytes <= ScratchLength) {
+          // In this case we are also in scratch record mode so save the data to the recording file.
+          // We use <= ScratchLength in the above condition because we don't want to put the
+          // checksum byte on there because that's not normally stored in
+          // recording files (similar to the way the V1 header is not stored). The SD card is a reliable device
+          // so we don't waste space and writing time by storing the checksum or headers
+          SDScratchRecordFile.write(c);
+        }
+        if (ScratchXmitBytes > ScratchLength) {
+          // everything got sent, including the checksum byte
+          ScratchState = SCR_WAITING_FOR_HEADER;
+        }
         break;
       case SCR_REC_COMMAND:
         if (ScratchXmitBytes < 3) {  // we didn't get the whole command yet
@@ -1195,8 +1195,8 @@ int handleSerialInput() {
             Serial.println("#REC");
             SRecState = SREC_RECORDING; // scratch is officially recording all traffic going to the gamepad
             GRecState = GREC_STOPPED;  // if recording was previously happening from the gamepad this stops it
-                                      // although this really shouldn't happen since the gamepad shouldn't be responding to both
-                                      // buttons and scratch at the same time.
+            // although this really shouldn't happen since the gamepad shouldn't be responding to both
+            // buttons and scratch at the same time.
             // if we're already recording to the same file, and that file is indeed open, don't do anything
             if (SDScratchRecordFileName[0] == ScratchSDFileName[0] &&
                 SDScratchRecordFileName[1] == ScratchSDFileName[1] &&
@@ -1204,11 +1204,11 @@ int handleSerialInput() {
                 SDScratchRecordFile) {
 
 #if DEBUG_SD
-                  Serial.println("#OP");
+              Serial.println("#OP");
 #endif
-                  return dataread;
+              return dataread;
             }
-            
+
             // If we get here, we're either not scratch recording, or recording to
             // the wrong file.
 
@@ -1216,7 +1216,7 @@ int handleSerialInput() {
             if (SDScratchRecordFile) {
               SDScratchRecordFile.close();
             }
-            
+
             // erase any prior recording on this same button sequence
             removeScratchRecordFile(ScratchSDFileName[0], ScratchSDFileName[1], ScratchSDFileName[2]);
             // open up the correct file
@@ -1226,58 +1226,58 @@ int handleSerialInput() {
             Serial.print("#F="); Serial.println(SDScratchRecordFileName);
 #endif
           }
-       } // end of "if scratchxmitbytes == 3"
-     } // end of switch
+        } // end of "if scratchxmitbytes == 3"
+    } // end of switch
   } // end of main while
   return dataread;
 }
 
 void send_trim(int matrix, int dpad) {
-    int trim = dpad;
-    
-    if (matrix >= REC_RECORD) {
-      //Serial.print("TRIM-MATRIX=");Serial.println(matrix);
-      switch (matrix) {
-        case REC_RECORD: 
-          if (longClick == 2) {  // only do this on a very long click
-            trim = 'S';
-          }
-          break;
-        case REC_PLAY:    trim = 'P'; break;
-        case REC_REWIND:  trim = 'R'; break;
-        case REC_ERASE:
-          if (longClick == 2) { // only do this on a very long click
-            trim = 'E';
-          }
-          break;
-      }
+  int trim = dpad;
+
+  if (matrix >= REC_RECORD) {
+    //Serial.print("TRIM-MATRIX=");Serial.println(matrix);
+    switch (matrix) {
+      case REC_RECORD:
+        if (longClick == 2) {  // only do this on a very long click
+          trim = 'S';
+        }
+        break;
+      case REC_PLAY:    trim = 'P'; break;
+      case REC_REWIND:  trim = 'R'; break;
+      case REC_ERASE:
+        if (longClick == 2) { // only do this on a very long click
+          trim = 'E';
+        }
+        break;
     }
-    // send the trim command
+  }
+  // send the trim command
 
-    int two = 2;
-    BlueTooth.print("V1");
-    BlueTooth.write(two);
-    BlueTooth.write('T');
-    BlueTooth.write(trim);
+  int two = 2;
+  BlueTooth.print("V1");
+  BlueTooth.write(two);
+  BlueTooth.write('T');
+  BlueTooth.write(trim);
 
-    unsigned int checksum = two + 'T' + trim;
-    checksum = (checksum % 256);
-    BlueTooth.write(checksum);
+  unsigned int checksum = two + 'T' + trim;
+  checksum = (checksum % 256);
+  BlueTooth.write(checksum);
 }
 
 void loop() {
 #if DEBUG_SD
-        if (SDGamepadRecordFile) {
-          Serial.print("#LOOP:"); Serial.print((long)SDGamepadRecordFile.position()); println();
-        }
+  if (SDGamepadRecordFile) {
+    Serial.print("#LOOP:"); Serial.print((long)SDGamepadRecordFile.position()); println();
+  }
 #endif
   int matrix = scanmatrix();
   CurDpad = decode_button(analogRead(DpadPin));
-  
+
   if (debugmode && matrix != -1) {
-    Serial.print("#MA:LC=");Serial.print(longClick); Serial.print("m:"); Serial.println(matrix);
+    Serial.print("#MA:LC="); Serial.print(longClick); Serial.print("m:"); Serial.println(matrix);
   }
-  
+
   if (debugmode && CurDpad != 's') {
     //Serial.print("#DP:"); Serial.println(CurDpad);
   }
@@ -1294,13 +1294,13 @@ void loop() {
     curmatrixstarttime = millis();  // used to detect long tap
     if (matrix != -1) {  // -1 means nothing was pressed
       // short beep for button press feedback
-      setBeep(200,50);
+      setBeep(200, 50);
     }
   }
 
   if (longClick && !priorLongClick) {  // we have detected a long click with no prior long click
     if (matrix < REC_RECORD) {  // don't beep if it's a record button
-      setBeep(2000,100); // high pitch beep tells user they are in long click mode
+      setBeep(2000, 100); // high pitch beep tells user they are in long click mode
 #if DEBUG_BUTTONS
       Serial.println("#LCL"); // long click
 #endif
@@ -1309,7 +1309,7 @@ void loop() {
   }
 
   int serialinput = handleSerialInput();  // this would be commands coming from scratch over the hardware serial port
-                                          // the return code is how many bytes of serial input were handled
+  // the return code is how many bytes of serial input were handled
 #if DEBUG_SD
   if (serialinput && debugmode) {
     Serial.print("#SINP="); Serial.println(serialinput);
@@ -1318,14 +1318,14 @@ void loop() {
 
   // if the robot sends something back to us, print it to the serial port
   // this is likely to be sensor data for scratch or debugging info
-  
+
   while (BlueTooth.available()) {
     Serial.write(BlueTooth.read());
   }
 
   // if we got commands from the serial port recently, we need to suppress commands coming from
   // the button pad for a moment, and also disable debug printing to the serial port
-  
+
   if (serialinput > 0) {
     suppressButtonsUntil = millis() + 1000;
     // we also want to forcibly stop gamepad record/play mode if scratch is talking to the gamepad
@@ -1334,7 +1334,7 @@ void loop() {
     GRecState = GREC_STOPPED;
     SDGamepadRecordFile.close();
 #if DEBUG_SD
-  Serial.println("SDCL3");
+    Serial.println("SDCL3");
 #endif
   }
 
@@ -1345,9 +1345,9 @@ void loop() {
   // if we get here we can finally handle the incoming button presses
 
   // The record/play buttons are treated specially by this switch statement.
-  
+
   switch (matrix) {
-     case REC_RECORD:
+    case REC_RECORD:
       // because this button takes on different meanings to avoid bouncing
       // we check to ensure nothing was previously pushed
       longClick = 0;
@@ -1368,9 +1368,9 @@ void loop() {
             // if it wasn't already open, open it for writing at the end
             SDGamepadRecordFile = SD.open(SDGamepadRecordFileName, FILE_WRITE);
 #if DEBUG_SD
-  Serial.println("SDGPOP1");
+            Serial.println("SDGPOP1");
 #endif
-  
+
           }
           if (SDGamepadRecordFile) {
             GRecState = GREC_RECORDING;
@@ -1386,11 +1386,11 @@ void loop() {
       }    // end of "if (priormatrix == -1)
       break;
 
-     case REC_PLAY:
+    case REC_PLAY:
 #if DEBUG_SD
-        if (SDGamepadRecordFile) {
-          Serial.print("#REC_PLAY:"); Serial.print((long)SDGamepadRecordFile.position()); println();
-        }
+      if (SDGamepadRecordFile) {
+        Serial.print("#REC_PLAY:"); Serial.print((long)SDGamepadRecordFile.position()); println();
+      }
 #endif
       longClick = 0;
       if (priormatrix == -1) {  // again, this button takes on different meanings so debounce
@@ -1401,8 +1401,8 @@ void loop() {
             SDGamepadRecordFile = SD.open(SDGamepadRecordFileName, FILE_WRITE);
             SDGamepadRecordFile.seek(0);  // rewind to start of file
 #if DEBUG_SD
-  Serial.println("SDrw1");
-#endif 
+            Serial.println("SDrw1");
+#endif
           }
           if (SDGamepadRecordFile) {
             GRecState = GREC_PLAYING;
@@ -1413,9 +1413,9 @@ void loop() {
         } else if (GRecState == GREC_PLAYING) {
           // if the state was already playing, the hitting the play button pauses the current playback
 #if DEBUG_SD
-        if (SDGamepadRecordFile) {
-          Serial.print("#PSH:"); Serial.print((long)SDGamepadRecordFile.position()); println();
-        }
+          if (SDGamepadRecordFile) {
+            Serial.print("#PSH:"); Serial.print((long)SDGamepadRecordFile.position()); println();
+          }
 #endif
           GRecState = GREC_PAUSED;
           setBeep(BF_NOTIFY, BD_MED);
@@ -1424,9 +1424,9 @@ void loop() {
 #endif
         } else {
 #if DEBUG_SD
-        if (SDGamepadRecordFile) {
-          Serial.print("#GSPLAY:"); Serial.print((long)SDGamepadRecordFile.position()); println();
-        }
+          if (SDGamepadRecordFile) {
+            Serial.print("#GSPLAY:"); Serial.print((long)SDGamepadRecordFile.position()); println();
+          }
 #endif
           GRecState = GREC_PLAYING;
           setBeep(BF_NOTIFY, BD_MED);
@@ -1434,42 +1434,42 @@ void loop() {
       } else if (millis() - curmatrixstarttime > 1000) { // long tap
         // if user is still holding the play button 1 second later we
         // enter loop mode
-        PlayLoopMode = 1; 
+        PlayLoopMode = 1;
       }
       break;
 
-     case REC_REWIND:
+    case REC_REWIND:
       GRecState = GREC_REWINDING;
       setBeep(BF_REWIND, BD_MED);
       break;
 
-     case REC_ERASE:
+    case REC_ERASE:
       longClick = 0;
       if (millis() - curmatrixstarttime < 50) {
         setBeep(BF_ERASE, BD_SHORT);
       } else if (millis() - curmatrixstarttime > 2000) { // very long tap required to erase for safety
         SDGamepadRecordFile.close();
 #if DEBUG_SD
-  Serial.println("SDCL4");
+        Serial.println("SDCL4");
 #endif
         SD.remove(SDGamepadRecordFileName);
         GRecState = GREC_STOPPED;
 #if DEBUG_SD
         Serial.println("#ERS");
-#endif       
+#endif
         setBeep(BF_ERASE, BD_LONG);
       }
       break;
 
-      default:  // -1 or any W, D, F mode there is nothing to do
-        break;
+    default:  // -1 or any W, D, F mode there is nothing to do
+      break;
   }
 
   priormatrix = matrix;
 #if DEBUG_SD
-        if (SDGamepadRecordFile) {
-          Serial.print("#PRMAT:"); Serial.print((long)SDGamepadRecordFile.position()); println();
-        }
+  if (SDGamepadRecordFile) {
+    Serial.print("#PRMAT:"); Serial.print((long)SDGamepadRecordFile.position()); println();
+  }
 #endif
   //
   // The following code handles the Scratch recording to a mode button feature
@@ -1491,48 +1491,48 @@ void loop() {
       GRecState = GREC_STOPPED;
       SDGamepadRecordFile.close();
 #if DEBUG_SD
-  Serial.println("#SDCL5");
+      Serial.println("#SDCL5");
 #endif
     }
     // see if a special command is already in progress
-    if (SRecState == SREC_PLAYING && 
-        SDScratchRecordFileName[0] == CurCmd && 
-        SDScratchRecordFileName[1] == CurSubCmd && 
+    if (SRecState == SREC_PLAYING &&
+        SDScratchRecordFileName[0] == CurCmd &&
+        SDScratchRecordFileName[1] == CurSubCmd &&
         SDScratchRecordFileName[2] == CurDpad) {
-          // if all those conditions are met then we're in the middle of playing
-          // a recorded mode button action and everything is as it should be
+      // if all those conditions are met then we're in the middle of playing
+      // a recorded mode button action and everything is as it should be
 #if DEBUG_SD
-          // PL = playing current button recording already 
-          Serial.print("#PLC:");Serial.print(CurCmd);Serial.print(CurSubCmd);Serial.println(CurDpad);
+      // PL = playing current button recording already
+      Serial.print("#PLC:"); Serial.print(CurCmd); Serial.print(CurSubCmd); Serial.println(CurDpad);
 #endif
     } else {
-          // if we get here, we're supposed to be playing a special command, however
-          // either none is currently playing or the wrong one is playing
-          SDScratchRecordFile.close();
-          SRecState = SREC_STOPPED;
+      // if we get here, we're supposed to be playing a special command, however
+      // either none is currently playing or the wrong one is playing
+      SDScratchRecordFile.close();
+      SRecState = SREC_STOPPED;
 #if DEBUG_SD
-          Serial.print("#PL:");Serial.print(CurCmd);Serial.print(CurSubCmd);Serial.print(CurDpad);Serial.print("/cur=");Serial.println(SDScratchRecordFileName);
+      Serial.print("#PL:"); Serial.print(CurCmd); Serial.print(CurSubCmd); Serial.print(CurDpad); Serial.print("/cur="); Serial.println(SDScratchRecordFileName);
 #endif
-          // see if there exists a file for the current button sequence
-          char cmdfile[4];
-          cmdfile[0] = CurCmd; cmdfile[1] = CurSubCmd; cmdfile[2] = CurDpad; cmdfile[3] = 0;
-          if (SD.exists(cmdfile)) {
-            // it does exist so it should be opened and we should go into play mode
-            openScratchRecordFile(CurCmd, CurSubCmd, CurDpad);
+      // see if there exists a file for the current button sequence
+      char cmdfile[4];
+      cmdfile[0] = CurCmd; cmdfile[1] = CurSubCmd; cmdfile[2] = CurDpad; cmdfile[3] = 0;
+      if (SD.exists(cmdfile)) {
+        // it does exist so it should be opened and we should go into play mode
+        openScratchRecordFile(CurCmd, CurSubCmd, CurDpad);
 
-            SRecState = SREC_PLAYING;
+        SRecState = SREC_PLAYING;
 #if DEBUG_SD
-            Serial.print("#@");Serial.println(SDScratchRecordFileName);
+        Serial.print("#@"); Serial.println(SDScratchRecordFileName);
 #endif
-          } else {
+      } else {
 #if DEBUG_SD
-            Serial.print("#NOPL:");Serial.print(cmdfile);Serial.print("/");Serial.print(CurCmd);Serial.print(CurSubCmd);Serial.println(CurDpad);
+        Serial.print("#NOPL:"); Serial.print(cmdfile); Serial.print("/"); Serial.print(CurCmd); Serial.print(CurSubCmd); Serial.println(CurDpad);
 #endif
-            // There is no recording for the current button sequence so we should drop out of play mode
-            SRecState = SREC_STOPPED;
-            SDScratchRecordFile.close();  // just in case it's open. it's ok to close it if it's not open
-          }
-        }
+        // There is no recording for the current button sequence so we should drop out of play mode
+        SRecState = SREC_STOPPED;
+        SDScratchRecordFile.close();  // just in case it's open. it's ok to close it if it's not open
+      }
+    }
   } else { // END OF LONGCLICK HANDLER "IF"
     // if we get here, there is no long click in progress so we should stop playing scratch files if
     // they are playing
@@ -1545,15 +1545,15 @@ void loop() {
     }
   }
 #if DEBUG_SD
-        if (SDGamepadRecordFile) {
-          Serial.print("#BEFORERECPLYHNDLER:"); Serial.print((long)SDGamepadRecordFile.position()); println();
-        }
+  if (SDGamepadRecordFile) {
+    Serial.print("#BEFORERECPLYHNDLER:"); Serial.print((long)SDGamepadRecordFile.position()); println();
+  }
 #endif
   RecordPlayHandler();  // handle the record/play mode
 #if DEBUG_SD
-        if (SDGamepadRecordFile) {
-          Serial.print("#AFTRERECPLYHNDLER:"); Serial.print((long)SDGamepadRecordFile.position()); println();
-        }
+  if (SDGamepadRecordFile) {
+    Serial.print("#AFTRERECPLYHNDLER:"); Serial.print((long)SDGamepadRecordFile.position()); println();
+  }
 #endif
   if (millis() > NextTransmitTime  && GRecState != GREC_PLAYING && SRecState != SREC_PLAYING ) { // don't transmit joystick controls during replay mode!
 
@@ -1566,14 +1566,14 @@ void loop() {
     // Bytes 3 through 3+L-1  The actual data.
     // Byte 3+L The base 256 checksum. The sum of all the payload bytes plus the L byte modulo 256.
     //
-    // Right now the 
+    // Right now the
     //
 
     if (debugmode) {
       Serial.print("#S="); Serial.print(CurCmd); Serial.print(CurSubCmd); Serial.println(CurDpad);
     }
     BlueTooth.print("V1"); // Vorpal hexapod radio protocol header version 1
-    int eight=8;
+    int eight = 8;
     BlueTooth.write(eight);
     BlueTooth.write(CurCmd);
     BlueTooth.write(CurSubCmd);
@@ -1581,13 +1581,13 @@ void loop() {
 
     unsigned int checksum = sendbeep(0);
 
-    checksum += eight+CurCmd+CurSubCmd+CurDpad;
+    checksum += eight + CurCmd + CurSubCmd + CurDpad;
     checksum = (checksum % 256);
     BlueTooth.write(checksum);
     //BlueTooth.flush();
-    
-    setBeep(0,0); // clear the current beep because it's been sent now
-    
+
+    setBeep(0, 0); // clear the current beep because it's been sent now
+
     NextTransmitTime = millis() + REC_FRAMEMILLIS;
   }
 }
