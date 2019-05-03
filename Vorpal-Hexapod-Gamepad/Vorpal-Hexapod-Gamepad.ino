@@ -179,6 +179,8 @@ SoftwareSerial BlueTooth(A5, A4); // connect bluetooth module Tx=A5=Yellow wire 
   #define GNDA1 A3    // Yes, you can make an analog port into a digital output!
 */
 #define SDCHIPSELECT A2   // chip select pin for the SD card reader
+//
+#define BEEPER_PIN A3
 
 // definitions to decode the 4x4 button matrix
 
@@ -1017,6 +1019,7 @@ void RecordPlayHandler() {
 void setup() {
   Serial.begin(38400);
   Serial.println("Gamepad started");
+
   // see if we're supposed to be in trim mode or card format mode
   int mat = scanmatrix();
   if (mat == WALK_1) {
@@ -1047,14 +1050,17 @@ void setup() {
 #endif
   Serial.println(Version);
 
-
   pinMode(SDCHIPSELECT, OUTPUT);
   digitalWrite(SDCHIPSELECT, HIGH); // chip select for SD card
 
   if (!SD.begin(SDCHIPSELECT)) {
     Serial.println("#SDBF");    // SD Begin Failed
-    return;
-  }
+    tone(BEEPER_PIN, 1000);
+  } else
+    tone(BEEPER_PIN, 300);
+  delay(100);
+  noTone(BEEPER_PIN);
+
 }
 
 boolean bleDataMode() {
