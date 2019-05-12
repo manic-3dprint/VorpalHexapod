@@ -169,7 +169,7 @@ SoftwareSerial BlueTooth(A5, A4); // connect bluetooth module Tx=A5=Yellow wire 
 
 // Pin definitions
 // joystick pins
-#define SW_PIN  10
+#define SW_PIN  A2
 #define VRX_PIN   A0
 #define VRY_PIN   A1
 
@@ -178,7 +178,7 @@ SoftwareSerial BlueTooth(A5, A4); // connect bluetooth module Tx=A5=Yellow wire 
   #define VCCA1 A2    // we play a trick to power the dpad buttons, use adjacent unusued analog ports for power
   #define GNDA1 A3    // Yes, you can make an analog port into a digital output!
 */
-#define SDCHIPSELECT A2   // chip select pin for the SD card reader
+#define SDCHIPSELECT 10   // chip select pin for the SD card reader
 //
 #define BEEPER_PIN A3
 
