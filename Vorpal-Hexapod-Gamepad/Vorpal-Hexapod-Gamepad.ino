@@ -317,13 +317,12 @@ char decode_joystick() {
   CurDpad = 's';
   //
   int xx1 = analogRead(VRY_PIN);
+  int yy1 = analogRead(VRX_PIN);
   if (xx1 < 300) {
     CurDpad = 'r';
   } else if (xx1 > 900) {
     CurDpad = 'l';
-  }
-  int yy1 = analogRead(VRX_PIN);
-  if (yy1 < 300) {
+  } else if (yy1 < 300) {
     CurDpad = 'f';
   } else if (yy1 > 900) {
     CurDpad = 'b';
